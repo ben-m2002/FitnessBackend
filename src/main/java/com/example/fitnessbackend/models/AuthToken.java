@@ -1,0 +1,25 @@
+package com.example.fitnessbackend.models;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
+
+@Entity
+@Table
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
+public class AuthToken {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
+    @Column(unique = true)
+    private String token;
+    private Date expirationMS;
+    @Column(unique = true)
+    private String email;
+}
