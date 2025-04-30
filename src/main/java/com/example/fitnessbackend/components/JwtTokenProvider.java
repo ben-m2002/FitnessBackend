@@ -9,11 +9,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.UUID;
 
 @PropertySource(value = "classpath:application.properties")
+@Component
 public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secretKey;
@@ -63,7 +65,7 @@ public class JwtTokenProvider {
     }
 
 
-    public String validateToken(String token)  {
+    public boolean validateToken(String token)  {
         // whenever we validate a token it should return to us a new one
         try{
             Claims claims = Jwts.parser()
@@ -71,9 +73,9 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token)
                     .getBody();
             if (claims.getExpiration().before(new Date())) {
-                return null;
+                return false;
             }
-            return renewToken(token);
+            return true;
         }catch (Exception e){
             throw new InvalidJwtException("Invalid JWT token");
         }
