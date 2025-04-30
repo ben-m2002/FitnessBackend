@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Table(name = "workout_exercise")
@@ -33,10 +34,17 @@ public class WorkoutExercise {
     @OneToMany(mappedBy = "workoutExercise", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<SetEntry> setEntries = new ArrayList<>();
 
+    private Date creationTimestamp;
+
 
     @PostLoad
     private void loadExerciseType() {
-        ExerciseTypeFactory.createExercise(exerciseName);
+        this.exerciseType = ExerciseTypeFactory.createExercise(exerciseName);
+    }
+
+    @PrePersist // right before we save it to the database
+    private void setCreationTimestamp() {
+        this.creationTimestamp = new Date();
     }
 
 }

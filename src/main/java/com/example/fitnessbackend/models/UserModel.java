@@ -2,6 +2,8 @@ package com.example.fitnessbackend.models;
 
 import com.example.fitnessbackend.nonPersistData.UserRole;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +11,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @Data
+@Builder
+@AllArgsConstructor
 public class UserModel {
 
     @Id

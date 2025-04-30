@@ -10,6 +10,6 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class ExerciseType {
-    private String name;
+    private ExerciseName name;
     private String description;
 }

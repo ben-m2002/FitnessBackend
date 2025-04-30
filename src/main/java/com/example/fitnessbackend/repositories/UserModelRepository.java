@@ -8,4 +8,6 @@ public interface UserModelRepository extends JpaRepository<UserModel, Integer> {
     UserModel findByUsername(String username);
     UserModel findById(int id);
     UserModel findByEmailAndPassword(String email, String password);
+    boolean existsByEmail(String email);
+    boolean existsByUsername(String username);
 }

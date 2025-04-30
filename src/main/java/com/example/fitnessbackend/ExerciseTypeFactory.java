@@ -9,28 +9,28 @@ public class ExerciseTypeFactory {
         switch (name) {
             case BENCH_PRESS:
                 return new ExerciseType(
-                        "Bench Press",
+                        name,
                         "A compound exercise that targets the chest, shoulders, and triceps."
                 );
             case TRICEP_EXTENSION:
                 return new ExerciseType(
-                        "Tricep Extension",
+                        name,
                         "An isolation exercise that targets the triceps."
                 );
             case SQUAT:
                 return new ExerciseType(
-                        "Squat",
+                        name,
                         "A compound exercise that targets the quadriceps, hamstrings, and glutes."
                 );
             case DEADLIFT:
                 return new ExerciseType(
-                        "Deadlift",
+                        name,
                         "A compound exercise that targets the back, glutes, and hamstrings."
                 );
             case LEG_PRESS:
                 return new ExerciseType(
-                        "Leg Press",
-                        "A compound exercise that targets the quadriceps, hamstrings, and glutes."
+                        name,
+                        "A exercise similar to squat, but performed on machine so more focused"
                 );
             default:
                 throw new IllegalArgumentException("Unknown exercise name: " + name);

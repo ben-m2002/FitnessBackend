@@ -35,6 +35,6 @@ public class ExerciseData {
 
     @PostLoad
     private void loadExerciseType() {
-        ExerciseTypeFactory.createExercise(exerciseName);
+       this.exerciseType = ExerciseTypeFactory.createExercise(exerciseName);
     }
 }

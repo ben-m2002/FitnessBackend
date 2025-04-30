@@ -2,41 +2,30 @@ package com.example.fitnessbackend.controllers;
 
 
 import com.example.fitnessbackend.components.JwtTokenProvider;
+import com.example.fitnessbackend.dtos.requests.auth.RegisterDto;
+import com.example.fitnessbackend.dtos.responses.ResponseDto;
+import com.example.fitnessbackend.service.AuthService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final AuthService authService;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider) {
-        this.authenticationManager = authenticationManager;
-        this.jwtTokenProvider = jwtTokenProvider;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
-
+    @PostMapping("/register")
+    public ResponseEntity<ResponseDto> register(@RequestBody RegisterDto registerDto) {
+        return ResponseEntity.status(200).body(authService.registerUser(registerDto));
+    }
 
 }
 
 
-//@RestController @RequestMapping("/auth")
-//public class AuthController {
-//    private final AuthenticationManager authManager;
-//    private final JwtTokenProvider tokenProvider;
-//
-//    @PostMapping("/login")
-//    public AuthResponse login(@RequestBody AuthRequest req) {
-//        // 1. Delegate to AuthenticationManager
-//        Authentication auth = authManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword()));
-//        // 2. On success, extract roles & build token
-//        List<String> roles = auth.getAuthorities().stream()
-//                .map(GrantedAuthority::getAuthority)
-//                .toList();
-//        String token = tokenProvider.createToken(req.getUsername(), roles);
-//        return new AuthResponse(token);
-//    }
-//}
