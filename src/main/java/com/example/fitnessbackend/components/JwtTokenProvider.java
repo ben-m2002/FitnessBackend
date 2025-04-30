@@ -1,7 +1,10 @@
 package com.example.fitnessbackend.components;
+import com.example.fitnessbackend.exceptions.InvalidJwtException;
+import com.example.fitnessbackend.exceptions.ResourceNotFoundException;
 import com.example.fitnessbackend.models.AuthToken;
 import com.example.fitnessbackend.models.UserModel;
 import com.example.fitnessbackend.repositories.AuthTokenRepository;
+import com.example.fitnessbackend.repositories.UserModelRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,9 +20,11 @@ public class JwtTokenProvider {
     @Value("${jwt.expirationMs}")
     private long validityInMilliseconds;
     private final AuthTokenRepository authTokenRepository;
+    private final UserModelRepository userModelRepository;
 
-    public JwtTokenProvider(AuthTokenRepository authTokenRepository) {
+    public JwtTokenProvider(AuthTokenRepository authTokenRepository, UserModelRepository userModelRepository) {
         this.authTokenRepository = authTokenRepository;
+        this.userModelRepository = userModelRepository;
     }
 
     public String createToken(UserModel userModel){
@@ -57,32 +62,35 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
-    // Fix this exception BS
 
-    public boolean validateToken(String token) throws Exception {
-        Claims claims = Jwts.parser()
-                .setSigningKey(secretKey)
-                .parseClaimsJws(token)
-                .getBody();
-        if (claims.getExpiration().before(new Date())) {
-            return false;
+    public String validateToken(String token)  {
+        // whenever we validate a token it should return to us a new one
+        try{
+            Claims claims = Jwts.parser()
+                    .setSigningKey(secretKey)
+                    .parseClaimsJws(token)
+                    .getBody();
+            if (claims.getExpiration().before(new Date())) {
+                return null;
+            }
+            return renewToken(token);
+        }catch (Exception e){
+            throw new InvalidJwtException("Invalid JWT token");
         }
-        this.renewToken(token);
-        return true;
     }
 
 
-    private void renewToken(String token) throws Exception {
+    private String renewToken(String token) throws Exception {
         // grab the user from the token
         AuthToken tokenModel = authTokenRepository.findAuthTokenByEmail(getEmail(token));
         if (tokenModel == null) {
-            throw new Exception("Token not found");
+            throw new ResourceNotFoundException("Token not found");
         }
-
+        UserModel userModel = userModelRepository.findByEmail(tokenModel.getEmail());
         // delete the token out the database
         authTokenRepository.deleteByToken(token);
         // create a new token
-
+        return this.createToken(userModel);
     }
 
 }
