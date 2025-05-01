@@ -10,6 +10,7 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -99,8 +100,12 @@ public class JwtTokenProvider {
         return claims;
     }
 
-
-    private String renewToken(String token)  {
+    @Transactional
+    public String renewToken(String token) {
+        // check if the token is valid
+        if (!this.validateToken(token)) {
+            throw new InvalidJwtException("Invalid JWT token");
+        }
         // grab the user from the token
         AuthToken tokenModel = authTokenRepository.findAuthTokenByEmail(getEmail(token));
         if (tokenModel == null) {
@@ -108,7 +113,8 @@ public class JwtTokenProvider {
         }
         UserModel userModel = userModelRepository.findByEmail(tokenModel.getEmail());
         // delete the token out the database
-        authTokenRepository.deleteByToken(token);
+        authTokenRepository.delete(tokenModel);
+        authTokenRepository.flush();
         // create a new token
         return this.createToken(userModel);
     }

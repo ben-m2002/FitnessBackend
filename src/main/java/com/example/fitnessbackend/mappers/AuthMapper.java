@@ -1,5 +1,6 @@
 package com.example.fitnessbackend.mappers;
 import com.example.fitnessbackend.dtos.requests.auth.RegisterDto;
+import com.example.fitnessbackend.dtos.responses.auth.AuthResponseDto;
 import com.example.fitnessbackend.models.UserModel;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,10 @@ public class AuthMapper {
         userModel.setFirstName(registerDto.getFirstName());
         userModel.setUsername(registerDto.getUserName());
         return userModel;
+    }
+
+    public AuthResponseDto modelToResponseDto(@NotNull UserModel userModel, String token, String message) {
+        return new AuthResponseDto(token, message, userModel.getId());
     }
 
 }

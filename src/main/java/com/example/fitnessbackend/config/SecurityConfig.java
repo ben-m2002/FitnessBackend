@@ -1,11 +1,15 @@
 package com.example.fitnessbackend.config;
 
 import com.example.fitnessbackend.components.JwtTokenProvider;
+import com.example.fitnessbackend.dtos.responses.ResponseDto;
 import com.example.fitnessbackend.security.JwtAuthenticationFilter;
 import com.example.fitnessbackend.service.CustomUserDetailsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tomcat.Jar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -39,6 +43,16 @@ public class SecurityConfig{
        http
                 .csrf(csrf -> csrf.disable())
                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+               .exceptionHandling(ex -> ex
+                       .authenticationEntryPoint((request, response, authException) -> {
+                           // Always 401 for invalid/missing JWT
+                           response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                           response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                           String body = new ObjectMapper()
+                                   .writeValueAsString(new ResponseDto(authException.getMessage(), null));
+                           response.getWriter().write(body);
+                       })
+               )
                .authorizeHttpRequests(auth -> auth
                        .requestMatchers("/api/auth/**").permitAll()
                        .anyRequest().authenticated()

@@ -3,6 +3,7 @@ import com.example.fitnessbackend.components.JwtTokenProvider;
 import com.example.fitnessbackend.dtos.requests.auth.AuthRequestDto;
 import com.example.fitnessbackend.dtos.requests.auth.RegisterDto;
 import com.example.fitnessbackend.dtos.responses.ResponseDto;
+import com.example.fitnessbackend.dtos.responses.auth.AuthResponseDto;
 import com.example.fitnessbackend.exceptions.EmailAlreadyExists;
 import com.example.fitnessbackend.exceptions.InvalidCredentialsException;
 import com.example.fitnessbackend.exceptions.UsernameAlreadyExists;
@@ -15,27 +16,25 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class AuthService {
+public class AuthService extends com.example.fitnessbackend.service.Service {
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final UserModelRepository userModelRepository;
-    private final AuthTokenRepository authTokenRepository;
+    protected final UserModelRepository userModelRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AuthService(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider,
                        UserModelRepository userModelRepository, AuthTokenRepository authTokenRepository, PasswordEncoder passwordEncoder) {
+        super(jwtTokenProvider, authTokenRepository);
         this.authenticationManager = authenticationManager;
-        this.jwtTokenProvider = jwtTokenProvider;
         this.userModelRepository = userModelRepository;
-        this.authTokenRepository = authTokenRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     // Add methods for authentication and token generation here
 
-    public ResponseDto register(@NotNull RegisterDto registerDto) {
+    public AuthResponseDto register(@NotNull RegisterDto registerDto) {
         // Check if email exists
         if (userModelRepository.existsByEmail(registerDto.getEmail())) {
             throw new EmailAlreadyExists("Email already exists");
@@ -53,7 +52,7 @@ public class AuthService {
 
         UserModel savedModel = userModelRepository.save(userModel);
         String token = authenticateUser(savedModel, registerDto.getPassword());
-        return new ResponseDto("User registered successfully", token);
+        return new AuthResponseDto(token, "User registered successfully", savedModel.getId());
     }
 
     public ResponseDto login(@NotNull AuthRequestDto authRequestDto) {
@@ -62,9 +61,10 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid email or password");
         }
         String token = authenticateUser(userModel, authRequestDto.getPassword());
-        return new ResponseDto("User logged in successfully", token);
+        return new AuthResponseDto(token, "User registered successfully", userModel.getId());
     }
 
+    @Transactional
     public ResponseDto logout(String token) {
         String email = jwtTokenProvider.getEmail(token);
         if (email == null) {

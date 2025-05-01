@@ -4,7 +4,10 @@ package com.example.fitnessbackend.models;
 import com.example.fitnessbackend.ExerciseTypeFactory;
 import com.example.fitnessbackend.nonPersistData.ExerciseName;
 import com.example.fitnessbackend.nonPersistData.ExerciseType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,7 +18,9 @@ import java.util.List;
 @Table(name = "workout_exercise")
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
 @Data
+@Builder
 public class WorkoutExercise {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.AUTO)
@@ -23,6 +28,7 @@ public class WorkoutExercise {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workout_session_id")
+    @JsonBackReference
     private WorkoutSession workoutSession;
 
     private ExerciseName exerciseName;
