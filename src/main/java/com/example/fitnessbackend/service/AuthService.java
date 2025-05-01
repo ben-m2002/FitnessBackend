@@ -1,5 +1,6 @@
 package com.example.fitnessbackend.service;
 import com.example.fitnessbackend.components.JwtTokenProvider;
+import com.example.fitnessbackend.dtos.requests.auth.AuthRequestDto;
 import com.example.fitnessbackend.dtos.requests.auth.RegisterDto;
 import com.example.fitnessbackend.dtos.responses.ResponseDto;
 import com.example.fitnessbackend.exceptions.EmailAlreadyExists;
@@ -34,7 +35,7 @@ public class AuthService {
 
     // Add methods for authentication and token generation here
 
-    public ResponseDto registerUser(@NotNull RegisterDto registerDto) {
+    public ResponseDto register(@NotNull RegisterDto registerDto) {
         // Check if email exists
         if (userModelRepository.existsByEmail(registerDto.getEmail())) {
             throw new EmailAlreadyExists("Email already exists");
@@ -51,13 +52,31 @@ public class AuthService {
                 build();
 
         UserModel savedModel = userModelRepository.save(userModel);
-        String token = authenticateUser(savedModel);
+        String token = authenticateUser(savedModel, registerDto.getPassword());
         return new ResponseDto("User registered successfully", token);
     }
 
-    private String authenticateUser(UserModel userModel){
-        Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userModel.getUsername(),
-                userModel.getPassword()));
+    public ResponseDto login(@NotNull AuthRequestDto authRequestDto) {
+        UserModel userModel = userModelRepository.findByEmail(authRequestDto.getEmail());
+        if (userModel == null) {
+            throw new InvalidCredentialsException("Invalid email or password");
+        }
+        String token = authenticateUser(userModel, authRequestDto.getPassword());
+        return new ResponseDto("User logged in successfully", token);
+    }
+
+    public ResponseDto logout(String token) {
+        String email = jwtTokenProvider.getEmail(token);
+        if (email == null) {
+            throw new InvalidCredentialsException("Invalid token");
+        }
+        authTokenRepository.deleteByEmail(email);
+        return new ResponseDto("User logged out successfully", null);
+    }
+
+    private String authenticateUser(UserModel userModel, String rawPassword) {
+        Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userModel.getEmail(),
+                rawPassword));
         if (auth.isAuthenticated()) {
             return jwtTokenProvider.createToken(userModel);
         }
@@ -68,21 +87,4 @@ public class AuthService {
 }
 
 
-//@RestController @RequestMapping("/auth")
-//public class AuthController {
-//    private final AuthenticationManager authManager;
-//    private final JwtTokenProvider tokenProvider;
-//
-//    @PostMapping("/login")
-//    public AuthResponse login(@RequestBody AuthRequest req) {
-//        // 1. Delegate to AuthenticationManager
-//        Authentication auth = authManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword()));
-//        // 2. On success, extract roles & build token
-//        List<String> roles = auth.getAuthorities().stream()
-//                .map(GrantedAuthority::getAuthority)
-//                .toList();
-//        String token = tokenProvider.createToken(req.getUsername(), roles);
-//        return new AuthResponse(token);
-//    }
-//}
+

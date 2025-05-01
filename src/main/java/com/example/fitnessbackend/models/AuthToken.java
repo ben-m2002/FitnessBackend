@@ -19,7 +19,7 @@ public class AuthToken {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    @Column(unique = true)
+    @Column(unique = true, length = 1024)
     private String token;
     private Date expirationMS;
     @Column(unique = true)

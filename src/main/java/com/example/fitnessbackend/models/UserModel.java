@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Table
 @Entity
 @NoArgsConstructor
@@ -25,6 +27,16 @@ public class UserModel {
     private String username;
     private String firstName;
     private UserRole role;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<WorkoutSession> workoutSessions;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.role == null) {
+            this.role = UserRole.USER;
+        }
+    }
 
 
 }

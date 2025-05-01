@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Table(name = "workout_sessions")
 @Entity
@@ -19,7 +20,11 @@ public class WorkoutSession {
     @JoinColumn(name = "user_id")
     private UserModel user;
 
+    @OneToMany(mappedBy = "workoutSession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<WorkoutExercise> workoutExercises;
+
     private LocalDate workoutDate;
     private String workoutNotes;
     private Integer workoutDifficulty;
+
 }
