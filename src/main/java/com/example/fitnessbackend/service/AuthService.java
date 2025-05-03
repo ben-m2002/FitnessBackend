@@ -87,7 +87,7 @@ public class AuthService extends com.example.fitnessbackend.service.Service {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(true)
-                .path("/api/auth")
+                .path("/api")
                 .maxAge(0)
                 .sameSite("None")
                 .build();
@@ -129,7 +129,7 @@ public class AuthService extends com.example.fitnessbackend.service.Service {
             Duration duration = Duration.ofMillis(jwtTokenProvider.getRefreshValidityInMilliseconds());
             ResponseCookie responseCookie = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
                     .httpOnly(true)
-                    .path("/api/auth")
+                    .path("/api")
                     .sameSite("None")
                     .secure(true)
                     .maxAge((int)duration.getSeconds())

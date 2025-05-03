@@ -6,6 +6,7 @@ import com.example.fitnessbackend.dtos.requests.workout.WorkoutSessionDto;
 import com.example.fitnessbackend.dtos.responses.workout.WorkoutExerciseResponseDto;
 import com.example.fitnessbackend.dtos.responses.workout.WorkoutSessionResponseDto;
 import com.example.fitnessbackend.service.WorkoutService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +23,9 @@ public class WorkoutExerciseController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<WorkoutExerciseResponseDto> createWorkout(@RequestBody WorkoutExerciseDto dto) {
-        return ResponseEntity.ok(workoutService.createExercise(dto));
+    public ResponseEntity<WorkoutExerciseResponseDto> createWorkout(
+            HttpServletRequest request
+            ,@RequestBody WorkoutExerciseDto dto) {
+        return ResponseEntity.ok(workoutService.createExercise(request,dto));
     }
 }

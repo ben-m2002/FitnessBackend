@@ -7,6 +7,5 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class WorkoutSessionDto {
-    private Integer userId;
     private String workoutDescription;
 }

@@ -10,6 +10,7 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
@@ -156,6 +157,19 @@ public class JwtTokenProvider {
         // grab the user from the token
         UserModel userModel = userModelRepository.findByEmail(email);
         return this.createAccessToken(userModel);
+    }
+
+
+    public String extractAccessToken(HttpServletRequest request) {
+        // 1. Read the Authorization header
+        String header = request.getHeader("Authorization");
+        // 2. Check that it’s non-null and starts with "Bearer "
+        if (header != null && header.startsWith("Bearer ")) {
+            // 3. Strip off the "Bearer " prefix to get the actual token
+            return header.substring(7);
+        }
+        // No token found
+        return null;
     }
 
 }

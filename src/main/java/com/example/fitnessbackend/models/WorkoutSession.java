@@ -25,7 +25,7 @@ public class WorkoutSession {
     @JoinColumn(name = "user_id")
     private UserModel user;
 
-    @OneToMany(mappedBy = "workoutSession", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "workoutSession", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<WorkoutExercise> workoutExercises;
 

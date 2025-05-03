@@ -37,7 +37,7 @@ public class WorkoutExercise {
     private ExerciseType exerciseType;
 
 
-    @OneToMany(mappedBy = "workoutExercise", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "workoutExercise", cascade = CascadeType.ALL)
     private List<SetEntry> setEntries;
 
     private Date creationTimestamp;

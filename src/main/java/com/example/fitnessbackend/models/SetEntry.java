@@ -2,6 +2,8 @@ package com.example.fitnessbackend.models;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -9,12 +11,14 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @Data
+@AllArgsConstructor
+@Builder
 public class SetEntry {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.AUTO)
     private Integer id;
 
-    private Integer nunSets;
+    private Integer numSets;
     private Integer reps;
     private Integer weight;
     private Integer difficulty;
