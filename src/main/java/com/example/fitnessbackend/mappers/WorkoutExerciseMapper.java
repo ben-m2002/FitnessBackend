@@ -28,9 +28,8 @@ public class WorkoutExerciseMapper {
                 .build();
     }
 
-    public WorkoutExerciseResponseDto toResponseDto(WorkoutExercise exercise, String token, String message) {
+    public WorkoutExerciseResponseDto toResponseDto(WorkoutExercise exercise, String message) {
         return new WorkoutExerciseResponseDto(
-                token,
                 message,
                 exercise.getId(),
                 exercise.getWorkoutSession().getId(),

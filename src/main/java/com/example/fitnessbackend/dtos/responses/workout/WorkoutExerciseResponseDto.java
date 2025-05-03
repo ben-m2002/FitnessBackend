@@ -14,10 +14,10 @@ public class WorkoutExerciseResponseDto extends ResponseDto {
     private String exerciseName;
     private List<SetEntry> setEntries;
 
-    public WorkoutExerciseResponseDto(String token, String message, Integer id, Integer sessionId,
+    public WorkoutExerciseResponseDto(String message, Integer id, Integer sessionId,
                                       String exerciseName,
                                       List<SetEntry> setEntries) {
-        super(token, message);
+        super(message);
         this.id = id;
         this.sessionId = sessionId;
         this.exerciseName = exerciseName;

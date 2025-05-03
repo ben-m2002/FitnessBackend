@@ -9,8 +9,10 @@ import lombok.Data;
 @AllArgsConstructor
 public class AuthResponseDto extends ResponseDto {
     private Integer userId;
-    public AuthResponseDto(String token, String message, Integer userId) {
-        super(token, message);
+    private String accessToken;
+    public AuthResponseDto(String message, String accessToken, Integer userId) {
+        super(message);
+        this.accessToken = accessToken;
         this.userId = userId;
     }
 }

@@ -26,9 +26,8 @@ public class WorkoutSessionMapper {
                 .build();
     }
 
-    public WorkoutSessionResponseDto toWSResponseDto(WorkoutSession workoutSession, String token, String message) {
+    public WorkoutSessionResponseDto toWSResponseDto(WorkoutSession workoutSession, String message) {
         return new WorkoutSessionResponseDto(
-                token,
                 message,
                 workoutSession.getId(),
                 workoutSession.getWorkoutDate(),

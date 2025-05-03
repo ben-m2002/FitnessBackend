@@ -20,14 +20,14 @@ public class WorkoutSessionResponseDto extends ResponseDto {
     private Integer userId;
     private List<WorkoutExercise> workoutExercises;
 
-    public WorkoutSessionResponseDto(String token, String message,
+    public WorkoutSessionResponseDto(String message,
                               Integer id, LocalDate workoutDate,
                               String workoutNotes,
                                 String workoutDescription,
                               Integer workoutDifficulty,
                               Integer userId,
                                      List<WorkoutExercise> workoutExercises) {
-        super(token, message);
+        super(message);
         this.id = id;
         this.workoutDate = workoutDate;
         this.workoutNotes = workoutNotes;

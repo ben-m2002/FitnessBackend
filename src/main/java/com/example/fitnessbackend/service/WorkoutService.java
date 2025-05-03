@@ -33,18 +33,14 @@ public class WorkoutService extends com.example.fitnessbackend.service.Service {
     public WorkoutSessionResponseDto createSession (WorkoutSessionDto dto){
         WorkoutSession workoutSession = workoutSessionMapper.toWorkoutSession(dto);
         WorkoutSession savedSession = workoutSessionRepository.save(workoutSession);
-        UserModel userModel = savedSession.getUser();
-        String newToken = this.renewToken(userModel);
         String message = "Workout session created successfully";
-        return workoutSessionMapper.toWSResponseDto(savedSession, newToken, message);
+        return workoutSessionMapper.toWSResponseDto(savedSession, message);
     }
 
     public WorkoutExerciseResponseDto createExercise(WorkoutExerciseDto dto){
         WorkoutExercise workoutExercise = workoutExerciseMapper.toWorkoutExercise(dto);
         WorkoutExercise savedExercise = workoutExerciseRepository.save(workoutExercise);
-        UserModel userModel = savedExercise.getWorkoutSession().getUser();
-        String newToken = this.renewToken(userModel);
         String message = "Workout exercise created successfully";
-        return workoutExerciseMapper.toResponseDto(savedExercise, newToken, message);
+        return workoutExerciseMapper.toResponseDto(savedExercise, message);
     }
 }

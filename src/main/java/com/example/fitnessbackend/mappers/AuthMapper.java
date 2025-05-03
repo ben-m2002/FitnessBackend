@@ -18,8 +18,8 @@ public class AuthMapper {
         return userModel;
     }
 
-    public AuthResponseDto modelToResponseDto(@NotNull UserModel userModel, String token, String message) {
-        return new AuthResponseDto(token, message, userModel.getId());
+    public AuthResponseDto modelToResponseDto(@NotNull UserModel userModel, String accessToken, String message) {
+        return new AuthResponseDto(message,accessToken,userModel.getId());
     }
 
 }

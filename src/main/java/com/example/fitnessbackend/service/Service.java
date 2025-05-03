@@ -17,8 +17,4 @@ public abstract class Service {
         this.authTokenRepository = authTokenRepository;
     }
 
-    public String renewToken(UserModel userModel) {
-        AuthToken oldToken = authTokenRepository.findAuthTokenByEmail(userModel.getEmail());
-        return jwtTokenProvider.renewToken(oldToken.getToken());
-    }
 }

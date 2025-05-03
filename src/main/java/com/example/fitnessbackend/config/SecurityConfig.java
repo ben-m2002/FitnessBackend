@@ -43,19 +43,19 @@ public class SecurityConfig{
        http
                 .csrf(csrf -> csrf.disable())
                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+               .authorizeHttpRequests(auth -> auth
+                       .requestMatchers("/api/auth/**").permitAll()
+                       .anyRequest().authenticated()
+               )
                .exceptionHandling(ex -> ex
                        .authenticationEntryPoint((request, response, authException) -> {
                            // Always 401 for invalid/missing JWT
                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                            String body = new ObjectMapper()
-                                   .writeValueAsString(new ResponseDto(authException.getMessage(), null));
+                                   .writeValueAsString(new ResponseDto(authException.getMessage()));
                            response.getWriter().write(body);
                        })
-               )
-               .authorizeHttpRequests(auth -> auth
-                       .requestMatchers("/api/auth/**").permitAll()
-                       .anyRequest().authenticated()
                )
                .authenticationProvider(daoAuthProvider())
                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

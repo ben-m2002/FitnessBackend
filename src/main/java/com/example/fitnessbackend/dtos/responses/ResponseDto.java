@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class ResponseDto {
     private String message;
-    private String token;
+
+    public ResponseDto(String message) {
+        this.message = message;
+    }
 }

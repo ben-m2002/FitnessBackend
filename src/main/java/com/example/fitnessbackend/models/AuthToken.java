@@ -15,6 +15,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @Data
+///  This is the refresh token model
 public class AuthToken {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
