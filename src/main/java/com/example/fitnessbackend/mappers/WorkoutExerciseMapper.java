@@ -2,6 +2,7 @@ package com.example.fitnessbackend.mappers;
 
 
 import com.example.fitnessbackend.dtos.requests.workout.WorkoutExerciseDto;
+import com.example.fitnessbackend.dtos.responses.workout.AllWEResponseDto;
 import com.example.fitnessbackend.dtos.responses.workout.WorkoutExerciseResponseDto;
 import com.example.fitnessbackend.exceptions.ResourceNotFoundException;
 import com.example.fitnessbackend.models.WorkoutExercise;
@@ -9,6 +10,8 @@ import com.example.fitnessbackend.models.WorkoutSession;
 import com.example.fitnessbackend.nonPersistData.ExerciseName;
 import com.example.fitnessbackend.repositories.WorkoutSessionRepository;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 
@@ -37,4 +40,23 @@ public class WorkoutExerciseMapper {
                 exercise.getSetEntries()
         );
     }
+
+    public AllWEResponseDto toAllUserWorkoutExerciseResponseDto(
+            String message,
+            List<WorkoutExercise> workoutExercises
+    ) {
+        System.out.println(workoutExercises.size());
+       return new AllWEResponseDto(
+               message,
+               workoutExercises.stream()
+                          .map(exercise -> new WorkoutExerciseResponseDto(
+                                 exercise.getId(),
+                                 exercise.getWorkoutSession().getId(),
+                                 exercise.getExerciseName().name(),
+                                 exercise.getSetEntries()
+                          ))
+                          .toList());
+    }
+
+
 }

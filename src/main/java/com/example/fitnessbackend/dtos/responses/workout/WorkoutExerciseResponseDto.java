@@ -24,4 +24,14 @@ public class WorkoutExerciseResponseDto extends ResponseDto {
         this.setEntries = setEntries;
     }
 
+    public WorkoutExerciseResponseDto(Integer id, Integer sessionId,
+                                      String exerciseName,
+                                      List<SetEntry> setEntries)
+    {
+        this.id = id;
+        this.sessionId = sessionId;
+        this.exerciseName = exerciseName;
+        this.setEntries = setEntries;
+    }
+
 }

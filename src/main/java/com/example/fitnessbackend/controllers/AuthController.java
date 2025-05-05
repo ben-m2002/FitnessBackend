@@ -6,6 +6,7 @@ import com.example.fitnessbackend.dtos.requests.auth.AuthRequestDto;
 import com.example.fitnessbackend.dtos.requests.auth.RegisterDto;
 import com.example.fitnessbackend.dtos.responses.ResponseDto;
 import com.example.fitnessbackend.dtos.responses.auth.AuthResponseDto;
+import com.example.fitnessbackend.dtos.responses.auth.UserResponseDto;
 import com.example.fitnessbackend.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,17 +39,24 @@ public class AuthController {
     @DeleteMapping("/logout")
     @Transactional
     public ResponseEntity<ResponseDto> logout(
-            @CookieValue(name = "refreshToken", required = false) String refreshToken,
+            @CookieValue(name = "refreshToken") String refreshToken,
             HttpServletResponse response) {
         return ResponseEntity.status(200).body(authService.logout(refreshToken, response));
     }
 
     @GetMapping("/refresh")
     public ResponseEntity<AuthResponseDto> refresh(
-            @CookieValue(name = "refreshToken", required = false) String refreshToken,
+            @CookieValue(name = "refreshToken") String refreshToken,
             HttpServletResponse response){
             return ResponseEntity.status(200).body(authService.refresh(refreshToken, response));
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> getUser(
+            @CookieValue(name = "refreshToken") String refreshToken){
+            return ResponseEntity.status(200).body(authService.getUser(refreshToken));
+    }
+
 
 
 }

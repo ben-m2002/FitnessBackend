@@ -117,7 +117,6 @@ public class JwtTokenProvider {
     }
 
     private boolean checkTokenValidation(String token, String type){
-        System.out.println(token);
         try{
             Claims claims = this.getJwtClaims(token);
             if (claims.getExpiration().before(new Date()) || !Objects.equals(claims.get("type", String.class), type)) {

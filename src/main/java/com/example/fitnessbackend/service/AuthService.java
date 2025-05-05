@@ -4,6 +4,7 @@ import com.example.fitnessbackend.dtos.requests.auth.AuthRequestDto;
 import com.example.fitnessbackend.dtos.requests.auth.RegisterDto;
 import com.example.fitnessbackend.dtos.responses.ResponseDto;
 import com.example.fitnessbackend.dtos.responses.auth.AuthResponseDto;
+import com.example.fitnessbackend.dtos.responses.auth.UserResponseDto;
 import com.example.fitnessbackend.exceptions.EmailAlreadyExists;
 import com.example.fitnessbackend.exceptions.InvalidCredentialsException;
 import com.example.fitnessbackend.exceptions.UsernameAlreadyExists;
@@ -29,15 +30,13 @@ import java.util.Date;
 
 @Service
 public class AuthService extends com.example.fitnessbackend.service.Service {
-    private final AuthenticationManager authenticationManager;
     private final AuthMapper authMapper;
     protected final UserModelRepository userModelRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AuthService(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider, AuthMapper authMapper,
                        UserModelRepository userModelRepository, AuthTokenRepository authTokenRepository, PasswordEncoder passwordEncoder) {
-        super(jwtTokenProvider, authTokenRepository);
-        this.authenticationManager = authenticationManager;
+        super(jwtTokenProvider, authTokenRepository, authenticationManager);
         this.authMapper = authMapper;
         this.userModelRepository = userModelRepository;
         this.passwordEncoder = passwordEncoder;
@@ -115,8 +114,20 @@ public class AuthService extends com.example.fitnessbackend.service.Service {
                 "Token refreshed successfully");
     }
 
+    public UserResponseDto getUser (String refreshToken){
+        if (refreshToken == null || !jwtTokenProvider.validateRefreshToken(refreshToken)) {
+            throw new InvalidCredentialsException("Invalid refresh token");
+        }
+        String email = jwtTokenProvider.getEmail(refreshToken);
+        UserModel userModel = userModelRepository.findByEmail(email);
+        if (userModel == null) {
+            throw new InvalidCredentialsException("Invalid refresh token");
+        }
+        return authMapper.modelToUserResponseDto(userModel, "User retrieved successfully");
+    }
+
     private Tokens authenticateUser(UserModel userModel, String rawPassword, HttpServletResponse response) {
-        Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userModel.getEmail(),
+        Authentication auth = this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userModel.getEmail(),
                 rawPassword));
         if (auth.isAuthenticated()) {
             // check to see if there is already a token before creating one

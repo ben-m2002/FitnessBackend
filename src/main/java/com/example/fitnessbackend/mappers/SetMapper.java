@@ -30,6 +30,7 @@ public class SetMapper {
                 .weight(dto.getWeight())
                 .numSets(dto.getNumSets())
                 .reps(dto.getReps())
+                .difficulty(dto.getDifficulty())
                 .build();
     }
 

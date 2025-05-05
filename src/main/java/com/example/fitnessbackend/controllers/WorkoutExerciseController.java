@@ -2,16 +2,12 @@ package com.example.fitnessbackend.controllers;
 
 
 import com.example.fitnessbackend.dtos.requests.workout.WorkoutExerciseDto;
-import com.example.fitnessbackend.dtos.requests.workout.WorkoutSessionDto;
+import com.example.fitnessbackend.dtos.responses.ResponseDto;
+import com.example.fitnessbackend.dtos.responses.workout.AllWEResponseDto;
 import com.example.fitnessbackend.dtos.responses.workout.WorkoutExerciseResponseDto;
-import com.example.fitnessbackend.dtos.responses.workout.WorkoutSessionResponseDto;
 import com.example.fitnessbackend.service.WorkoutService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/workout-exercise")
@@ -22,10 +18,38 @@ public class WorkoutExerciseController {
         this.workoutService = workoutService;
     }
 
+
+    @GetMapping("/getAll")
+    public ResponseEntity<AllWEResponseDto> getAllWorkoutExercises() {
+        return ResponseEntity.ok(workoutService.getAllUserWorkoutExercises());
+    }
+
+
+    @GetMapping("/get/AllFromSession/{sessionId}")
+    public ResponseEntity<AllWEResponseDto> getAllWorkoutExercisesFromSession(
+            @PathVariable Integer sessionId) {
+        return ResponseEntity.ok(workoutService.getAllSessionExercises(sessionId));
+    }
+
     @PostMapping("/create")
     public ResponseEntity<WorkoutExerciseResponseDto> createWorkout(
-            HttpServletRequest request
-            ,@RequestBody WorkoutExerciseDto dto) {
-        return ResponseEntity.ok(workoutService.createExercise(request,dto));
+            @RequestBody WorkoutExerciseDto dto) {
+        return ResponseEntity.ok(workoutService.createExercise(dto));
     }
+
+   @GetMapping("get/{id}")
+    public ResponseEntity<WorkoutExerciseResponseDto> getWorkoutExerciseById(
+            @PathVariable Integer id) {
+        return ResponseEntity.ok(workoutService.getWorkoutExerciseById(id));
+    }
+
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ResponseDto> deleteWorkoutExercise(
+            @PathVariable Integer id
+    ){
+        return ResponseEntity.ok(workoutService.deleteWorkoutExercise(id));
+    }
+
+
 }

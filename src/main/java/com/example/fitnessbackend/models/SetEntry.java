@@ -1,6 +1,7 @@
 package com.example.fitnessbackend.models;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,5 +25,6 @@ public class SetEntry {
     private Integer difficulty;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     private WorkoutExercise workoutExercise;
 }

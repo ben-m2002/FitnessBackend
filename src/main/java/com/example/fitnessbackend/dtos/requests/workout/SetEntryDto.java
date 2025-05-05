@@ -15,4 +15,5 @@ public class SetEntryDto {
     private Integer weight;
     private Integer numSets;
     private Integer reps;
+    private Integer difficulty;
 }

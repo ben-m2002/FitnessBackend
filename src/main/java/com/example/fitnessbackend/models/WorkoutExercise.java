@@ -5,6 +5,7 @@ import com.example.fitnessbackend.ExerciseTypeFactory;
 import com.example.fitnessbackend.nonPersistData.ExerciseName;
 import com.example.fitnessbackend.nonPersistData.ExerciseType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,6 +39,7 @@ public class WorkoutExercise {
 
 
     @OneToMany(mappedBy = "workoutExercise", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<SetEntry> setEntries;
 
     private Date creationTimestamp;

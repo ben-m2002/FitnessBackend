@@ -37,4 +37,8 @@ public class UserPrincipal implements UserDetails {
     public String getEmail(){
         return userModel.getEmail();
     }
+
+    public UserModel getUserModel() {
+        return userModel;
+    }
 }

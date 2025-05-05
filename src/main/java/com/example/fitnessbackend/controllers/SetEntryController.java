@@ -23,9 +23,8 @@ public class SetEntryController {
 
     @PostMapping("/create")
     public ResponseEntity<SetEntryResponseDto> createSetEntry(
-            HttpServletRequest request
-            ,@RequestBody SetEntryDto dto) {
-        return ResponseEntity.ok(workoutService.createSetEntry(request,dto));
+            @RequestBody SetEntryDto dto) {
+        return ResponseEntity.ok(workoutService.createSetEntry(dto));
     }
 
 }
