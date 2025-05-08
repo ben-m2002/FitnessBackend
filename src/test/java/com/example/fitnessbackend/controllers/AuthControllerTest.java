@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class AuthControllerTest {
+public class AuthControllerTest extends ControllerTest {
 
   @Autowired private MockMvc mockMvc;
 
@@ -42,16 +42,7 @@ public class AuthControllerTest {
 
   @BeforeEach
   public void setUp() {
-    PasswordEncoder encoder = new BCryptPasswordEncoder();
-    UserModel defaultUser =
-        UserModel.builder()
-            .email("admin@admin.com")
-            .password(encoder.encode("admin"))
-            .firstName("Admin")
-            .username("admin")
-            .role(UserRole.ADMIN)
-            .build();
-    userModelRepository.save(defaultUser);
+   this.addDefaultUserToDB();
   }
 
   @AfterEach
@@ -59,20 +50,6 @@ public class AuthControllerTest {
     userModelRepository.deleteAll();
   }
 
-  private String createValidRefreshToken(String requestBody) throws Exception {
-    MvcResult loginResult =
-        mockMvc
-            .perform(
-                MockMvcRequestBuilders.post("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody))
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andReturn();
-
-    String setCookieHeader = loginResult.getResponse().getHeader("Set-Cookie");
-
-    return Arrays.stream(setCookieHeader.split(";")).findFirst().get().split("=")[1];
-  }
 
   @Test
   public void register_ValidUser() throws Exception {

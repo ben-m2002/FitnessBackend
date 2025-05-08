@@ -4,6 +4,7 @@ import com.example.fitnessbackend.dtos.responses.ResponseDto;
 import com.example.fitnessbackend.models.WorkoutExercise;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 public class WorkoutUpdateRequestDto {
     @NotNull

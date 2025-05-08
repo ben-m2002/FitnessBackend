@@ -23,7 +23,7 @@ public class WorkoutSessionController extends Controller {
   }
 
   @PostMapping("/create")
-  public ResponseEntity<ResponseDto> createWorkout(
+  public ResponseEntity<ResponseDto> createWorkoutSession(
       @RequestBody WorkoutSessionDto dto) {
     WorkoutSessionResponseDto response = workoutService.createSession(dto);
     return ResponseEntity.ok(response);
