@@ -25,4 +25,15 @@ public class SetEntryResponseDto extends ResponseDto {
         this.difficulty = difficulty;
     }
 
+    public SetEntryResponseDto(Integer id,
+                               Integer workoutExerciseId, Integer weight,
+                               Integer numSets, Integer reps, Integer difficulty) {
+        this.id = id;
+        this.workoutExerciseId = workoutExerciseId;
+        this.weight = weight;
+        this.numSets = numSets;
+        this.reps = reps;
+        this.difficulty = difficulty;
+    }
+
 }

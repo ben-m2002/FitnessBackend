@@ -45,7 +45,6 @@ public class WorkoutExerciseMapper {
             String message,
             List<WorkoutExercise> workoutExercises
     ) {
-        System.out.println(workoutExercises.size());
        return new AllWEResponseDto(
                message,
                workoutExercises.stream()

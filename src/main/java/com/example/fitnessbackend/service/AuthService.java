@@ -73,9 +73,6 @@ public class AuthService extends com.example.fitnessbackend.service.Service {
             throw new InvalidCredentialsException("Invalid email or password");
         }
         Tokens tokens = authenticateUser(userModel, authRequestDto.getPassword(), response);
-        if (tokens == null) {
-            throw new InvalidCredentialsException("Invalid email or password");
-        }
         return authMapper.modelToResponseDto(userModel, tokens.getAccessToken(),
                 "User logged in successfully");
     }

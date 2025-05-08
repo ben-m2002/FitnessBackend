@@ -24,6 +24,7 @@ public class UserModel {
     @Column(unique = true)
     private String email;
     private String password;
+    @Column(unique = true)
     private String username;
     private String firstName;
     private UserRole role;
