@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SetEntryUDto {
   @NotNull private Integer id;
-  @NotNull private Integer workoutExerciseId;
   @NotNull private Integer weight;
   @NotNull private Integer numSets;
   @NotNull private Integer reps;

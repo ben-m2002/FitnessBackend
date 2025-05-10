@@ -52,7 +52,7 @@ public class AuthControllerTest extends ControllerTest {
 
 
   @Test
-  public void register_ValidUser() throws Exception {
+  public void register_ValidUser_ShouldReturnUSer() throws Exception {
     RegisterDto registerDto = new RegisterDto("ben@admin.com", "admin", "Ben", "ben");
     String requestBody = objectMapper.writeValueAsString(registerDto);
     mockMvc
@@ -68,7 +68,7 @@ public class AuthControllerTest extends ControllerTest {
   }
 
   @Test
-  public void register_NoEmail() throws Exception {
+  public void register_NoEmail_ShouldReturnBadRequest() throws Exception {
     RegisterDto registerDto = new RegisterDto("", "admin", "Ben", "ben");
     String requestBody = objectMapper.writeValueAsString(registerDto);
     mockMvc
@@ -84,7 +84,7 @@ public class AuthControllerTest extends ControllerTest {
   }
 
   @Test
-  public void login_ValidUser() throws Exception {
+  public void login_ValidUser_ShouldReturnUser() throws Exception {
     AuthRequestDto authRequestDto = new AuthRequestDto("admin@admin.com", "admin");
     String requestBody = objectMapper.writeValueAsString(authRequestDto);
     mockMvc
@@ -98,7 +98,7 @@ public class AuthControllerTest extends ControllerTest {
   }
 
   @Test
-  public void login_InvalidCredentials() throws Exception {
+  public void login_InvalidCredentials_ShouldReturnAnError() throws Exception {
     AuthRequestDto authRequestDto = new AuthRequestDto("admin12@admin.com", "admin21333");
     String requestBody = objectMapper.writeValueAsString(authRequestDto);
     mockMvc
@@ -128,7 +128,7 @@ public class AuthControllerTest extends ControllerTest {
   }
 
   @Test
-  public void logout_WithInvalidRefreshTokenCookie_ShouldFail() throws Exception {
+  public void logout_WithInvalidRefreshTokenCookie_ShouldReturnError() throws Exception {
     mockMvc
         .perform(
             MockMvcRequestBuilders.delete("/api/auth/logout")
@@ -154,7 +154,7 @@ public class AuthControllerTest extends ControllerTest {
   }
 
   @Test
-  public void refresh_WithInvalidJWTToken_ShouldFail() throws Exception {
+  public void refresh_WithInvalidJWTToken_ShouldThrowInvalidJWTToken() throws Exception {
     mockMvc
         .perform(
             MockMvcRequestBuilders.get("/api/auth/refresh")
@@ -164,7 +164,7 @@ public class AuthControllerTest extends ControllerTest {
   }
 
   @Test
-  public void refresh_WithLoggedOutJwtToken_ShouldFail() throws Exception {
+  public void refresh_WithLoggedOutJwtToken_ShouldDisplayTokenNotFound() throws Exception {
     AuthRequestDto authRequestDto = new AuthRequestDto("admin@admin.com", "admin");
     String requestBody = objectMapper.writeValueAsString(authRequestDto);
     String refreshTokenValue = this.createValidRefreshToken(requestBody);
@@ -207,7 +207,7 @@ public class AuthControllerTest extends ControllerTest {
     }
 
   @Test
-  public void getUser_WithInValidRefreshTokenCookie_ShouldFail() throws Exception {
+  public void getUser_WithInValidRefreshTokenCookie_ShouldThrowA400Error() throws Exception {
 
     mockMvc
             .perform(
@@ -218,7 +218,7 @@ public class AuthControllerTest extends ControllerTest {
 
 
   @Test
-  public void getUser_WithLoggedOutJwtToken_ShouldFail() throws Exception {
+  public void getUser_WithLoggedOutJwtToken_ShouldThrowA400Error() throws Exception {
     AuthRequestDto authRequestDto = new AuthRequestDto("admin@admin.com", "admin");
     String requestBody = objectMapper.writeValueAsString(authRequestDto);
     String refreshTokenValue = this.createValidRefreshToken(requestBody);

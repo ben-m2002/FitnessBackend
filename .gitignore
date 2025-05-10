@@ -1,6 +1,17 @@
+# Project docs
 HELP.md
-target/
-!.mvn/wrapper/maven-wrapper.jar
+
+# Java build artifacts
+/target/
+/build/
+
+# Include Maven wrapper
+!mvnw
+!mvnw.cmd
+!maven-wrapper.properties
+!/.mvn/wrapper/maven-wrapper.jar
+
+# Retain build dirs in multi-module layouts
 !**/src/main/**/target/
 !**/src/test/**/target/
 
@@ -14,7 +25,7 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -25,17 +36,12 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
 
-src/main/resources/application.properties
+# Logs
+*.log
 
-pom.xml
-
-mvnw
-mvnw.cmd
-maven-wrapper.properties
+# OS files
+.DS_Store

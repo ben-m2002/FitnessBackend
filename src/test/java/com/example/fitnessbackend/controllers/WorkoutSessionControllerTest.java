@@ -35,14 +35,8 @@ public class WorkoutSessionControllerTest extends ControllerTest {
   @BeforeEach
   public void setUp() {
     addDefaultUserToDB();
-    WorkoutSession workoutSession =
-        WorkoutSession.builder()
-            .workoutDescription("good lower body day")
-            .user(userModelRepository.findByEmail("admin@admin.com"))
-            .workoutDifficulty(5)
-            .workoutNotes("Man this wasn't that bad but I still feel pretty good")
-            .build();
-    savedWorkoutSession = workoutSessionRepository.save(workoutSession);
+    savedWorkoutSession =
+        this.getASavedWorkoutSession(userModelRepository.findByEmail("admin@admin.com"));
   }
 
   @AfterEach
@@ -50,13 +44,6 @@ public class WorkoutSessionControllerTest extends ControllerTest {
     userModelRepository.deleteAll();
     workoutSessionRepository.deleteAll();
     savedWorkoutSession = null;
-  }
-
-  private String getAccessToken() throws Exception {
-    AuthRequestDto authRequestDto = new AuthRequestDto("admin@admin.com", "admin");
-    String authRequestBody = objectMapper.writeValueAsString(authRequestDto);
-    AuthResponseDto authResponseDto = this.getAuthLoginResponse(authRequestBody);
-    return authResponseDto.getAccessToken();
   }
 
   @Test
@@ -147,10 +134,22 @@ public class WorkoutSessionControllerTest extends ControllerTest {
   }
 
   @Test
+  public void getWorkoutSession_InvalidSessionId_ShouldReturnUnauthorized() throws Exception {
+    String accessToken = getAccessToken();
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.get("/api/workout-session/get/9999")
+                .contentType("application/json")
+                .header("Authorization", "Bearer " + accessToken))
+        .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Workout session not found"));
+  }
+
+  @Test
   public void updateWorkoutSession_ValidAuthToken_ShouldUpdateSession() throws Exception {
     String token = getAccessToken();
-    WorkoutUpdateRequestDto requestDto = WorkoutUpdateRequestDto
-            .builder()
+    WorkoutUpdateRequestDto requestDto =
+        WorkoutUpdateRequestDto.builder()
             .id(savedWorkoutSession.getId())
             .workoutNotes("Updated notes")
             .workoutDescription("Updated description")
@@ -164,53 +163,58 @@ public class WorkoutSessionControllerTest extends ControllerTest {
                 .content(requestBody)
                 .header("Authorization", "Bearer " + token))
         .andExpect(MockMvcResultMatchers.status().isOk())
-        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Workout session updated successfully"))
-        .andExpect(MockMvcResultMatchers.jsonPath("$.workoutDescription").value("Updated description"))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.message")
+                .value("Workout session updated successfully"))
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.workoutDescription").value("Updated description"))
         .andExpect(MockMvcResultMatchers.jsonPath("$.workoutNotes").value("Updated notes"));
   }
 
-    @Test
-    public void updateWorkoutSession_InvalidAuthToken_ShouldReturnUnauthorized() throws Exception {
-      WorkoutUpdateRequestDto requestDto = WorkoutUpdateRequestDto
-              .builder()
-              .id(savedWorkoutSession.getId())
-              .workoutNotes("Updated notes")
-              .workoutDescription("Updated description")
-              .workoutDifficulty(3)
-              .build();
-      String requestBody = objectMapper.writeValueAsString(requestDto);
-      mockMvc
-              .perform(
-                      MockMvcRequestBuilders.post("/api/workout-session/update")
-                              .contentType("application/json")
-                              .content(requestBody)
-                              .header("Authorization", "Bearer " + "Invalid token"))
-              .andExpect(MockMvcResultMatchers.status().isUnauthorized());
-    }
+  @Test
+  public void updateWorkoutSession_InvalidAuthToken_ShouldReturnUnauthorized() throws Exception {
+    WorkoutUpdateRequestDto requestDto =
+        WorkoutUpdateRequestDto.builder()
+            .id(savedWorkoutSession.getId())
+            .workoutNotes("Updated notes")
+            .workoutDescription("Updated description")
+            .workoutDifficulty(3)
+            .build();
+    String requestBody = objectMapper.writeValueAsString(requestDto);
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.post("/api/workout-session/update")
+                .contentType("application/json")
+                .content(requestBody)
+                .header("Authorization", "Bearer " + "Invalid token"))
+        .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+  }
 
-    @Test
-    public void deleteWorkoutSession_ValidAuthToken_ShouldDeleteSession() throws Exception {
-        String token = getAccessToken();
-        mockMvc
-                .perform(
-                        MockMvcRequestBuilders.delete("/api/workout-session/delete/" + savedWorkoutSession.getId())
-                                .contentType("application/json")
-                                .header("Authorization", "Bearer " + token))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Workout session deleted successfully"));
-    }
+  @Test
+  public void deleteWorkoutSession_ValidAuthToken_ShouldDeleteSession() throws Exception {
+    String token = getAccessToken();
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.delete(
+                    "/api/workout-session/delete/" + savedWorkoutSession.getId())
+                .contentType("application/json")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.message")
+                .value("Workout session deleted successfully"));
+  }
 
-    @Test
-    public void deleteWorkoutSession_InvalidWorkoutSessionId_ShouldReturnA400Error() throws Exception {
-        String token = getAccessToken();
-        mockMvc
-                .perform(
-                        MockMvcRequestBuilders.delete("/api/workout-session/delete/9999")
-                                .contentType("application/json")
-                                .header("Authorization", "Bearer " + token))
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Workout session not found"));
-    }
-
-
+  @Test
+  public void deleteWorkoutSession_InvalidWorkoutSessionId_ShouldReturnA400Error()
+      throws Exception {
+    String token = getAccessToken();
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.delete("/api/workout-session/delete/9999")
+                .contentType("application/json")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Workout session not found"));
+  }
 }

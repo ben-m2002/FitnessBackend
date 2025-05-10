@@ -19,6 +19,16 @@ public class WorkoutExerciseController extends Controller {
     this.workoutService = workoutService;
   }
 
+  @PostMapping("/create")
+  public ResponseEntity<ResponseDto> createWorkoutExercise(
+          @Valid @RequestBody WorkoutExerciseDto dto,
+          BindingResult result) {
+    if (result.hasErrors()) {
+      return this.validateResult(result);
+    }
+    return ResponseEntity.ok(workoutService.createExercise(dto));
+  }
+
   @GetMapping("/getAll")
   public ResponseEntity<ResponseDto> getAllWorkoutExercises() {
     return ResponseEntity.ok(workoutService.getAllUserWorkoutExercises());
@@ -28,16 +38,6 @@ public class WorkoutExerciseController extends Controller {
   public ResponseEntity<ResponseDto> getAllWorkoutExercisesFromSession(
       @PathVariable Integer sessionId) {
     return ResponseEntity.ok(workoutService.getAllSessionExercises(sessionId));
-  }
-
-  @PostMapping("/create")
-  public ResponseEntity<ResponseDto> createWorkout(
-      @Valid @RequestBody WorkoutExerciseDto dto,
-      BindingResult result) {
-    if (result.hasErrors()) {
-        return this.validateResult(result);
-    }
-    return ResponseEntity.ok(workoutService.createExercise(dto));
   }
 
   @GetMapping("get/{id}")

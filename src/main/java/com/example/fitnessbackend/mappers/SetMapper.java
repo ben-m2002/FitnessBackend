@@ -5,6 +5,7 @@ import com.example.fitnessbackend.dtos.requests.workout.SetEntryDto;
 import com.example.fitnessbackend.dtos.requests.workout.SetEntryUDto;
 import com.example.fitnessbackend.dtos.responses.workout.AllSEResponseDto;
 import com.example.fitnessbackend.dtos.responses.workout.SetEntryResponseDto;
+import com.example.fitnessbackend.exceptions.ResourceNotFoundException;
 import com.example.fitnessbackend.models.SetEntry;
 import com.example.fitnessbackend.models.WorkoutExercise;
 import com.example.fitnessbackend.repositories.SetEntryRepository;
@@ -57,7 +58,8 @@ public class SetMapper {
     }
 
     public SetEntry fromSetEntryUDto(SetEntryUDto dto){
-        SetEntry oldEntry = entryRepository.getById(dto.getId());
+        SetEntry oldEntry = entryRepository.findById(dto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Set entry not found"));
         oldEntry.setWeight(dto.getWeight());
         oldEntry.setNumSets(dto.getNumSets());
         oldEntry.setReps(dto.getReps());

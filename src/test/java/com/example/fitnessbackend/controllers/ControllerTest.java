@@ -1,9 +1,15 @@
 package com.example.fitnessbackend.controllers;
 
+import com.example.fitnessbackend.dtos.requests.auth.AuthRequestDto;
 import com.example.fitnessbackend.dtos.responses.auth.AuthResponseDto;
 import com.example.fitnessbackend.models.UserModel;
+import com.example.fitnessbackend.models.WorkoutExercise;
+import com.example.fitnessbackend.models.WorkoutSession;
+import com.example.fitnessbackend.nonPersistData.ExerciseName;
 import com.example.fitnessbackend.nonPersistData.UserRole;
 import com.example.fitnessbackend.repositories.UserModelRepository;
+import com.example.fitnessbackend.repositories.WorkoutExerciseRepository;
+import com.example.fitnessbackend.repositories.WorkoutSessionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,6 +32,18 @@ public class ControllerTest {
   @Autowired private ObjectMapper objectMapper;
 
   @Autowired private UserModelRepository userModelRepository;
+
+  @Autowired private WorkoutSessionRepository workoutSessionRepository;
+
+  @Autowired private WorkoutExerciseRepository workoutExerciseRepository;
+
+  private WorkoutSession savedWorkoutSession;
+
+  private WorkoutExercise savedWorkoutExercise;
+
+  public  ControllerTest() {
+
+  }
 
   protected void addDefaultUserToDB() {
     PasswordEncoder encoder = new BCryptPasswordEncoder();
@@ -67,5 +85,32 @@ public class ControllerTest {
 
     String responseBody = loginResult.getResponse().getContentAsString();
     return objectMapper.readValue(responseBody, AuthResponseDto.class);
+  }
+
+  protected String getAccessToken() throws Exception {
+    AuthRequestDto authRequestDto = new AuthRequestDto("admin@admin.com", "admin");
+    String authRequestBody = objectMapper.writeValueAsString(authRequestDto);
+    AuthResponseDto authResponseDto = this.getAuthLoginResponse(authRequestBody);
+    return authResponseDto.getAccessToken();
+  }
+
+  protected WorkoutSession getASavedWorkoutSession(UserModel userModel) {
+    WorkoutSession workoutSession =
+        WorkoutSession.builder()
+            .workoutDescription("good lower body day")
+            .user(userModel)
+            .workoutDifficulty(5)
+            .workoutNotes("Man this wasn't that bad but I still feel pretty good")
+            .build();
+    return workoutSessionRepository.save(workoutSession);
+  }
+
+  protected WorkoutExercise getASavedWorkoutExercise(WorkoutSession workoutSession) {
+    WorkoutExercise workoutExercise =
+        WorkoutExercise.builder()
+            .workoutSession(workoutSession)
+            .exerciseName(ExerciseName.SQUAT)
+            .build();
+    return workoutExerciseRepository.save(workoutExercise);
   }
 }
