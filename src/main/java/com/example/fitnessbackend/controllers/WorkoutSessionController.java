@@ -1,13 +1,10 @@
 package com.example.fitnessbackend.controllers;
 
 import com.example.fitnessbackend.dtos.requests.workout.WorkoutSessionDto;
-import com.example.fitnessbackend.dtos.requests.workout.WorkoutUpdateRequestDto;
+import com.example.fitnessbackend.dtos.requests.workout.WorkoutSessionUpdateRequestDto;
 import com.example.fitnessbackend.dtos.responses.ResponseDto;
-import com.example.fitnessbackend.dtos.responses.workout.AllUserWSResponseDto;
 import com.example.fitnessbackend.dtos.responses.workout.WorkoutSessionResponseDto;
-import com.example.fitnessbackend.dtos.responses.workout.WorkoutSessionResponseSDto;
 import com.example.fitnessbackend.service.WorkoutService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -41,7 +38,7 @@ public class WorkoutSessionController extends Controller {
 
   @PostMapping("/update")
   public ResponseEntity<ResponseDto> updateWorkoutSession(
-      @Valid @RequestBody WorkoutUpdateRequestDto dto,
+      @Valid @RequestBody WorkoutSessionUpdateRequestDto dto,
       BindingResult result) {
     if (result.hasErrors()) {
         return validateResult(result);

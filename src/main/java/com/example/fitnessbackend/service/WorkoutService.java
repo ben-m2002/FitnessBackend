@@ -81,7 +81,7 @@ public class WorkoutService extends com.example.fitnessbackend.service.Service {
     return workoutSessionMapper.toWSResponseDto(workoutSession, message);
   }
 
-  public WorkoutSessionResponseDto updateWorkoutSession(WorkoutUpdateRequestDto dto) {
+  public WorkoutSessionResponseDto updateWorkoutSession(WorkoutSessionUpdateRequestDto dto) {
     WorkoutSession newWorkoutSession = workoutSessionMapper.fromWorkoutUpdateRequestDto(dto);
     this.validateSessionOwner(newWorkoutSession);
     WorkoutSession newSavedSession = workoutSessionRepository.save(newWorkoutSession);

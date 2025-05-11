@@ -6,6 +6,7 @@ import com.example.fitnessbackend.models.SetEntry;
 import com.example.fitnessbackend.models.WorkoutExercise;
 import com.example.fitnessbackend.models.WorkoutSession;
 import com.example.fitnessbackend.nonPersistData.ExerciseName;
+import com.example.fitnessbackend.nonPersistData.WeightMeasurementType;
 import com.example.fitnessbackend.repositories.SetEntryRepository;
 import com.example.fitnessbackend.repositories.UserModelRepository;
 import com.example.fitnessbackend.repositories.WorkoutExerciseRepository;
@@ -54,6 +55,7 @@ public class SetEntryControllerTest extends ControllerTest {
             .reps(12)
             .weight(225)
             .difficulty(3)
+            .measurementType(WeightMeasurementType.POUNDS)
             .workoutExercise(savedWorkoutExercise)
             .build();
     savedSetEntry = setEntryRepository.save(setEntry);
@@ -76,6 +78,7 @@ public class SetEntryControllerTest extends ControllerTest {
             .weight(1000)
             .numSets(100)
             .reps(100)
+            .measurementType(WeightMeasurementType.POUNDS)
             .difficulty(3)
             .build();
     String setEntryRequestBody = objectMapper.writeValueAsString(setEntryDto);
@@ -195,6 +198,7 @@ public class SetEntryControllerTest extends ControllerTest {
             .weight(10000)
             .numSets(10000)
             .reps(10000)
+            .measurementType(WeightMeasurementType.POUNDS)
             .difficulty(3)
             .build();
     String setEntryRequestBody = objectMapper.writeValueAsString(setEntryUDto);
@@ -223,6 +227,7 @@ public class SetEntryControllerTest extends ControllerTest {
             .numSets(10000)
             .reps(10000)
             .difficulty(3)
+            .measurementType(WeightMeasurementType.POUNDS)
             .build();
     String setEntryRequestBody = objectMapper.writeValueAsString(setEntryUDto);
     mockMvc
@@ -235,26 +240,26 @@ public class SetEntryControllerTest extends ControllerTest {
         .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Set entry not found"));
   }
 
-    @Test
-    public void deleteSetEntry_ShouldDeleteSetEntry() throws Exception {
-        String accessToken = getAccessToken();
-        mockMvc
-                .perform(
-                        MockMvcRequestBuilders.delete("/api/set-entry/delete/" + savedSetEntry.getId())
-                                .header("Authorization", "Bearer " + accessToken))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Set entry deleted successfully"));
-    }
+  @Test
+  public void deleteSetEntry_ShouldDeleteSetEntry() throws Exception {
+    String accessToken = getAccessToken();
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.delete("/api/set-entry/delete/" + savedSetEntry.getId())
+                .header("Authorization", "Bearer " + accessToken))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.message").value("Set entry deleted successfully"));
+  }
 
-    @Test
-    public void deleteSetEntry_InvalidId_ShouldReturnError() throws Exception {
-        String accessToken = getAccessToken();
-        mockMvc
-                .perform(
-                        MockMvcRequestBuilders.delete("/api/set-entry/delete/" + "9999")
-                                .header("Authorization", "Bearer " + accessToken))
-                .andExpect(MockMvcResultMatchers.status().is4xxClientError())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Set entry not found"));
-    }
-
+  @Test
+  public void deleteSetEntry_InvalidId_ShouldReturnError() throws Exception {
+    String accessToken = getAccessToken();
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.delete("/api/set-entry/delete/" + "9999")
+                .header("Authorization", "Bearer " + accessToken))
+        .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Set entry not found"));
+  }
 }

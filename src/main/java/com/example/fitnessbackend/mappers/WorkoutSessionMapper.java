@@ -1,18 +1,13 @@
 package com.example.fitnessbackend.mappers;
-import com.example.fitnessbackend.components.JwtTokenProvider;
 import com.example.fitnessbackend.dtos.requests.workout.WorkoutSessionDto;
-import com.example.fitnessbackend.dtos.requests.workout.WorkoutUpdateRequestDto;
+import com.example.fitnessbackend.dtos.requests.workout.WorkoutSessionUpdateRequestDto;
 import com.example.fitnessbackend.dtos.responses.workout.AllUserWSResponseDto;
 import com.example.fitnessbackend.dtos.responses.workout.WorkoutSessionResponseDto;
 import com.example.fitnessbackend.dtos.responses.workout.WorkoutSessionResponseSDto;
 import com.example.fitnessbackend.exceptions.ResourceNotFoundException;
-import com.example.fitnessbackend.models.AuthToken;
 import com.example.fitnessbackend.models.UserModel;
 import com.example.fitnessbackend.models.WorkoutSession;
-import com.example.fitnessbackend.repositories.AuthTokenRepository;
-import com.example.fitnessbackend.repositories.UserModelRepository;
 import com.example.fitnessbackend.repositories.WorkoutSessionRepository;
-import com.example.fitnessbackend.service.AuthService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -64,7 +59,7 @@ public class WorkoutSessionMapper {
 
     }
 
-    public WorkoutSession fromWorkoutUpdateRequestDto (WorkoutUpdateRequestDto dto){
+    public WorkoutSession fromWorkoutUpdateRequestDto (WorkoutSessionUpdateRequestDto dto){
         Optional<WorkoutSession> workoutSession = workoutSessionRepository.findById(dto.getId());
         if (workoutSession.isEmpty()){
             throw new ResourceNotFoundException("Workout session not found");

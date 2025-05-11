@@ -37,6 +37,7 @@ public class SetMapper {
                 .weight(dto.getWeight())
                 .numSets(dto.getNumSets())
                 .reps(dto.getReps())
+                .measurementType(dto.getMeasurementType())
                 .difficulty(dto.getDifficulty())
                 .build();
     }
@@ -44,14 +45,14 @@ public class SetMapper {
     public SetEntryResponseDto toSetEntryResponseDto(SetEntry entry, String message){
         return new SetEntryResponseDto(message, entry.getId(),
                 entry.getWorkoutExercise().getId(), entry.getWeight(),
-                entry.getNumSets(), entry.getReps(), entry.getDifficulty());
+                entry.getNumSets(), entry.getReps(), entry.getMeasurementType() ,entry.getDifficulty());
     }
 
     public AllSEResponseDto toAllSEResponseDto(List<SetEntry> setEntries, String message){
         List<SetEntryResponseDto> setEntryResponseDtos = setEntries.stream()
                 .map(entry -> new SetEntryResponseDto(entry.getId(),
                         entry.getWorkoutExercise().getId(), entry.getWeight(),
-                        entry.getNumSets(), entry.getReps(), entry.getDifficulty()))
+                        entry.getNumSets(), entry.getReps(), entry.getMeasurementType(),entry.getDifficulty()))
                 .toList();
         return new AllSEResponseDto(message, setEntryResponseDtos);
 

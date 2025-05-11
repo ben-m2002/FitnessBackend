@@ -1,13 +1,10 @@
 package com.example.fitnessbackend.controllers;
 
-import com.example.fitnessbackend.dtos.requests.auth.AuthRequestDto;
 import com.example.fitnessbackend.dtos.requests.workout.WorkoutSessionDto;
-import com.example.fitnessbackend.dtos.requests.workout.WorkoutUpdateRequestDto;
-import com.example.fitnessbackend.dtos.responses.auth.AuthResponseDto;
+import com.example.fitnessbackend.dtos.requests.workout.WorkoutSessionUpdateRequestDto;
 import com.example.fitnessbackend.models.WorkoutSession;
 import com.example.fitnessbackend.repositories.UserModelRepository;
 import com.example.fitnessbackend.repositories.WorkoutSessionRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -148,8 +145,8 @@ public class WorkoutSessionControllerTest extends ControllerTest {
   @Test
   public void updateWorkoutSession_ValidAuthToken_ShouldUpdateSession() throws Exception {
     String token = getAccessToken();
-    WorkoutUpdateRequestDto requestDto =
-        WorkoutUpdateRequestDto.builder()
+    WorkoutSessionUpdateRequestDto requestDto =
+        WorkoutSessionUpdateRequestDto.builder()
             .id(savedWorkoutSession.getId())
             .workoutNotes("Updated notes")
             .workoutDescription("Updated description")
@@ -173,8 +170,8 @@ public class WorkoutSessionControllerTest extends ControllerTest {
 
   @Test
   public void updateWorkoutSession_InvalidAuthToken_ShouldReturnUnauthorized() throws Exception {
-    WorkoutUpdateRequestDto requestDto =
-        WorkoutUpdateRequestDto.builder()
+    WorkoutSessionUpdateRequestDto requestDto =
+        WorkoutSessionUpdateRequestDto.builder()
             .id(savedWorkoutSession.getId())
             .workoutNotes("Updated notes")
             .workoutDescription("Updated description")

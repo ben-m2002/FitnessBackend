@@ -1,6 +1,7 @@
 package com.example.fitnessbackend.models;
 
 
+import com.example.fitnessbackend.nonPersistData.WeightMeasurementType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ public class SetEntry {
     private Integer numSets;
     private Integer reps;
     private Integer weight;
+    private WeightMeasurementType measurementType;
     private Integer difficulty;
 
     @ManyToOne(fetch = FetchType.LAZY)
