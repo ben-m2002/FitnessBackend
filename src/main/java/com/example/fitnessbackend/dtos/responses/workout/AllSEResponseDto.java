@@ -1,17 +1,18 @@
 package com.example.fitnessbackend.dtos.responses.workout;
 
 import com.example.fitnessbackend.dtos.responses.ResponseDto;
+import java.util.List;
 import lombok.Data;
 
-import java.util.List;
 
 
+@SuppressWarnings("CheckStyle")
 @Data
 public class AllSEResponseDto extends ResponseDto {
-    private List<SetEntryResponseDto> setEntries;
+  private List<SetEntryResponseDto> setEntries;
 
-    public AllSEResponseDto(String message, List<SetEntryResponseDto> setEntries) {
-        super(message);
-        this.setEntries = setEntries;
-    }
+  public AllSEResponseDto(String message, List<SetEntryResponseDto> setEntries) {
+    super(message);
+    this.setEntries = setEntries;
+  }
 }
