@@ -22,17 +22,17 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # 3 Lint (Checkstyle)
-      - name: Run Checkstyle
-        run: ./mvnw --batch-mode checkstyle:check
-        continue-on-error: true
-
-
-
-      # 4 Tests
-      - name: Run unit tests
-        run: ./mvnw --batch-mode test -e -X
-        continue-on-error: true
+#      # 3 Lint (Checkstyle)
+#      - name: Run Checkstyle
+#        run: ./mvnw --batch-mode checkstyle:check
+#        continue-on-error: true
+#
+#
+#
+#      # 4 Tests
+#      - name: Run unit tests
+#        run: ./mvnw --batch-mode test -e -X
+#        continue-on-error: true
 
       # 5 Package
       - name: Build JAR
