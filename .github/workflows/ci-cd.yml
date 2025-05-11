@@ -7,7 +7,7 @@ on:
 
 # Only truly sensitive values in Secrets
 env:
-  ECR_REPOSITORY: bylt-api            # Plain text
+  ECR_REPOSITORY: bylt-backend            # Plain text
   AWS_ACCOUNT_ID: 692350947347       # Plain text (or use a Repo Variable)
   MAVEN_OPTS: "-Dplexus.security.dispatcher.skip=true"
 
