@@ -64,6 +64,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Debug IMAGE_URI
+        run: echo "→ IMAGE_URI is '$IMAGE_URI'"
+
       - name: Prepare task definition
         id: task-def
         run: |
