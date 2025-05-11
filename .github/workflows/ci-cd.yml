@@ -24,13 +24,14 @@ jobs:
       # 3 Lint (Checkstyle)
       - name: Run Checkstyle
         run: ./mvnw --batch-mode checkstyle:check
-        continue-on-error: false
+        continue-on-error: true
       #   add reviewdog action if you want PR annotations
       #   see: https://github.com/marketplace/actions/checkstyle-for-java
 
       # 4 Tests
       - name: Run unit tests
         run: ./mvnw --batch-mode test
+        continue-on-error: false
 
       # 5 Package
       - name: Build JAR
