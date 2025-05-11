@@ -5,15 +5,16 @@ on:
     branches:
       - main
 
+# Only truly sensitive values in Secrets
 env:
-  AWS_REGION:      us-east-1
-  AWS_ACCOUNT_ID:  692350947347      # ← your account ID; not secret
-  ECR_REPOSITORY:  bylt-backend           # plain text
-  MAVEN_OPTS:      "-Dplexus.security.dispatcher.skip=true"
+  ECR_REPOSITORY: bylt-api            # Plain text
+  AWS_ACCOUNT_ID: 692350947347       # Plain text (or use a Repo Variable)
+  MAVEN_OPTS: "-Dplexus.security.dispatcher.skip=true"
 
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -24,15 +25,15 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Build JAR (skip CI tests)
+      - name: Build JAR (skip tests in CI)
         run: ./mvnw --batch-mode package -DskipTests
 
-      - name: Configure AWS credentials
+      - name: Configure AWS creds
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region:            ${{ env.AWS_REGION }}
+          aws-region:            us-east-1        # hardcoded or pull from a secret
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -41,39 +42,37 @@ jobs:
       - name: Build & push Docker image
         run: |
           TAG=${GITHUB_SHA}
-          URI=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:$TAG
+          URI=${AWS_ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com/${ECR_REPOSITORY}:$TAG
           docker build -t "$URI" .
           docker push "$URI"
-          echo "Built and pushed $URI"
+          echo "##[set-output name=image_uri::$URI]"
+
+    # Expose the image URI for the deploy job
+    outputs:
+      image_uri: ${{ steps.build-and-push.outputs.image_uri }}
 
   deploy:
     needs: build_and_push
     runs-on: ubuntu-latest
-    env:
-      IMAGE_TAG:      ${{ github.sha }}
-      AWS_REGION:     ${{ env.AWS_REGION }}
-      AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
-      ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Configure AWS creds
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region:            ${{ env.AWS_REGION }}
+          aws-region:            us-east-1
 
-      - name: Build IMAGE_URI
+      - name: Set IMAGE_URI
         run: |
-          IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}
-          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+          echo "IMAGE_URI=${{ needs.build_and_push.outputs.image_uri }}" >> $GITHUB_ENV
 
       - name: Prepare & sanitize ECS task definition
         run: |
-          sed -e "s|IMAGE_URI|${IMAGE_URI}|g" ecs-task-definition.json \
+          sed "s|IMAGE_URI|${IMAGE_URI}|g" ecs-task-definition.json \
             | jq 'del(
                 .compatibilities,
                 .taskDefinitionArn,
@@ -83,10 +82,12 @@ jobs:
                 .registeredAt,
                 .registeredBy,
                 .containerDefinitions[].enableFaultInjection
-              )' > task-def.json
+              )' \
+            > task-def.json
 
-      - name: Register new ECS task definition (AWS CLI)
-        run: aws ecs register-task-definition --cli-input-json file://task-def.json
+      - name: Register ECS task definition
+        run: aws ecs register-task-definition \
+          --cli-input-json file://task-def.json
 
       - name: Update ECS service
         run: |
