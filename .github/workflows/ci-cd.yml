@@ -31,7 +31,10 @@ jobs:
       - name: Bootstrap Maven security
         run: |
           mkdir -p ~/.m2
-            touch ~/.m2/settings-security.xml
+          cat <<EOF > ~/.m2/settings-security.xml
+          <?xml version="1.0" encoding="UTF-8"?>
+          <settingsSecurity/>
+          EOF
 
       # 4 Tests
       - name: Run unit tests
