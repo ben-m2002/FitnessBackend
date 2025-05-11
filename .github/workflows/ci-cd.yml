@@ -7,6 +7,7 @@ on:
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  MAVEN_OPTS: "-Dplexus.security.dispatcher.skip=true"
 
 jobs:
   build_test_lint:
@@ -21,27 +22,8 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # 3 Lint (Checkstyle)
-      - name: Run Checkstyle
-        run: ./mvnw --batch-mode checkstyle:check
-        continue-on-error: true
-      #   add reviewdog action if you want PR annotations
-      #   see: https://github.com/marketplace/actions/checkstyle-for-java
-
-      - name: Bootstrap Maven security
-        run: |
-          mkdir -p ~/.m2
-          cat <<EOF > ~/.m2/settings-security.xml
-          <?xml version="1.0" encoding="UTF-8"?>
-          <settingsSecurity>
-            <master>dummy-master</master>
-          </settingsSecurity>
-          EOF
-
-      # 4 Tests
+      # 3 Tests
       - name: Run unit tests
-        env:
-          MAVEN_OPTS: "-Dplexus.security.dispatcher.skip=true"
         run: ./mvnw --batch-mode test -e -X
         continue-on-error: false
 
