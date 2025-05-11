@@ -66,13 +66,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            us-east-1
 
-      - name: Set IMAGE_URI
-        run: |
-          echo "IMAGE_URI=${{ needs.build_and_push.outputs.image_uri }}" >> $GITHUB_ENV
-
       - name: Prepare & sanitize ECS task definition
         run: |
-          sed "s|IMAGE_URI|${IMAGE_URI}|g" ecs-task-definition.json \
+          IMAGE_URI="${{ needs.build_and_push.outputs.image_uri }}"
+          sed "s|IMAGE_URI|$IMAGE_URI|g" ecs-task-definition.json \
             | jq 'del(
                 .compatibilities,
                 .taskDefinitionArn,
@@ -82,8 +79,7 @@ jobs:
                 .registeredAt,
                 .registeredBy,
                 .containerDefinitions[].enableFaultInjection
-              )' \
-            > task-def.json
+              )' > task-def.json
 
       - name: Register new ECS task definition
         run: aws ecs register-task-definition --cli-input-json file://task-def.json
