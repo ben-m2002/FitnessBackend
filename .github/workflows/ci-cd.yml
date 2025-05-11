@@ -75,8 +75,10 @@ jobs:
       - name: Fill in new image URI
         id: task-def
         run: |
+          # Substitute IMAGE_URI placeholder
           sed -e "s|IMAGE_URI|${{ env.IMAGE_URI }}|g" ecs-task-definition.json > task-def-raw.json
-          # Strip out AWS-only and invalid registration keys:
+          
+          # Strip Describe‑only and preview keys
           jq 'del(
                 .compatibilities,
                 .taskDefinitionArn,
@@ -87,6 +89,7 @@ jobs:
                 .registeredBy,
                 .containerDefinitions[].enableFaultInjection
               )' task-def-raw.json > task-def.json
+          
           echo "taskDef=task-def.json" >> $GITHUB_OUTPUT
 
       # Deploy to ECS
