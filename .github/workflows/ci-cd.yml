@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION:     us-east-1            # or keep as secret if needed
-  ECR_REPOSITORY: bylt-api             # plain text so registry URI isn't masked
+  ECR_REPOSITORY: bylt-backend            # plain text so registry URI isn't masked
   MAVEN_OPTS:     "-Dplexus.security.dispatcher.skip=true"
 
 jobs:
