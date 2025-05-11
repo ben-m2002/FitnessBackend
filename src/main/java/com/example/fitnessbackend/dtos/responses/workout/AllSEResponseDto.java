@@ -6,7 +6,7 @@ import lombok.Data;
 
 
 
-@SuppressWarnings("CheckStyle")
+@SuppressWarnings("ALL")
 @Data
 public class AllSEResponseDto extends ResponseDto {
   private List<SetEntryResponseDto> setEntries;
