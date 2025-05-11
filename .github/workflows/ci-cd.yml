@@ -71,15 +71,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # 9 Render new task definition (replace placeholder image)
-      - name: Fill in the new image ID
+      # Render new task definition (replace placeholder image)
+      - name: Fill in new image URI
         id: task-def
         run: |
-          sed -e "s|IMAGE_URI|${{ env.IMAGE_URI }}|g" ecs-task-definition.json > task-def.json
+          sed -e "s|IMAGE_URI|${{ env.IMAGE_URI }}|g" ecs-task-definition.json > task-def-raw.json
+          # Strip out AWS-only and invalid registration keys:
+          jq 'del(
+                .compatibilities,
+                .taskDefinitionArn,
+                .requiresAttributes,
+                .revision,
+                .status,
+                .registeredAt,
+                .registeredBy,
+                .containerDefinitions[].enableFaultInjection
+              )' task-def-raw.json > task-def.json
           echo "taskDef=task-def.json" >> $GITHUB_OUTPUT
 
-      # 10 Deploy to ECS
-      - uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      # Deploy to ECS
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.taskDef }}
           service: ${{ secrets.ECS_SERVICE }}
