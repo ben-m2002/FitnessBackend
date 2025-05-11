@@ -28,7 +28,15 @@ jobs:
       #   add reviewdog action if you want PR annotations
       #   see: https://github.com/marketplace/actions/checkstyle-for-java
 
-
+      - name: Bootstrap Maven security
+        run: |
+          mkdir -p ~/.m2
+          cat <<EOF > ~/.m2/settings-security.xml
+          <?xml version="1.0" encoding="UTF-8"?>
+          <settingsSecurity>
+            <master>dummy-master</master>
+          </settingsSecurity>
+          EOF
 
       # 4 Tests
       - name: Run unit tests
