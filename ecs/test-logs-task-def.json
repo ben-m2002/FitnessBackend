@@ -1,0 +1,25 @@
+{
+  "family": "test-logs",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::692350947347:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "hello",
+      "image": "busybox",
+      "command": ["sh", "-c", "echo 'TEST-LOGS: hello world'; sleep 60"],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/bylt",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "test",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ],
+  "volumes": []
+}
