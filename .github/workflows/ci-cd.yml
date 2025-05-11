@@ -6,16 +6,14 @@ on:
       - main
 
 env:
-  AWS_REGION:     us-east-1            # or keep as secret if needed
-  ECR_REPOSITORY: bylt-backend            # plain text so registry URI isn't masked
-  MAVEN_OPTS:     "-Dplexus.security.dispatcher.skip=true"
+  AWS_REGION:      us-east-1
+  AWS_ACCOUNT_ID:  692350947347      # ← your account ID; not secret
+  ECR_REPOSITORY:  bylt-backend           # plain text
+  MAVEN_OPTS:      "-Dplexus.security.dispatcher.skip=true"
 
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
-    outputs:
-      image_uri_b64: ${{ steps.push-image.outputs.image_uri_b64 }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -26,7 +24,7 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Build JAR (skip tests in CI)
+      - name: Build JAR (skip CI tests)
         run: ./mvnw --batch-mode package -DskipTests
 
       - name: Configure AWS credentials
@@ -41,32 +39,25 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build & push Docker image
-        id: push-image
-        env:
-          IMAGE_TAG:      ${{ github.sha }}
-          REGISTRY:       ${{ steps.login-ecr.outputs.registry }}
         run: |
-          URI="$REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          TAG=${GITHUB_SHA}
+          URI=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:$TAG
           docker build -t "$URI" .
           docker push "$URI"
-          B64_URI=$(echo -n "$URI" | base64)
-          echo "image_uri_b64=$B64_URI" >> $GITHUB_OUTPUT
+          echo "Built and pushed $URI"
 
   deploy:
     needs: build_and_push
     runs-on: ubuntu-latest
     env:
-      IMAGE_URI_B64: ${{ needs.build_and_push.outputs.image_uri_b64 }}
+      IMAGE_TAG:      ${{ github.sha }}
+      AWS_REGION:     ${{ env.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
+      ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Decode IMAGE_URI
-        run: |
-          IMAGE_URI=$(echo "$IMAGE_URI_B64" | base64 --decode)
-          echo "Decoded IMAGE_URI=$IMAGE_URI"
-          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -75,8 +66,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ${{ env.AWS_REGION }}
 
+      - name: Build IMAGE_URI
+        run: |
+          IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${IMAGE_TAG}
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
       - name: Prepare & sanitize ECS task definition
-        id: task-def
         run: |
           sed -e "s|IMAGE_URI|${IMAGE_URI}|g" ecs-task-definition.json \
             | jq 'del(
@@ -89,11 +84,9 @@ jobs:
                 .registeredBy,
                 .containerDefinitions[].enableFaultInjection
               )' > task-def.json
-          echo "taskDef=task-def.json" >> $GITHUB_OUTPUT
 
-      - name: Register new ECS task definition
-        run: |
-          aws ecs register-task-definition --cli-input-json file://task-def.json
+      - name: Register new ECS task definition (AWS CLI)
+        run: aws ecs register-task-definition --cli-input-json file://task-def.json
 
       - name: Update ECS service
         run: |
