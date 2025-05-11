@@ -20,6 +20,7 @@ import org.springframework.http.MediaType;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import org.springframework.test.web.servlet.MvcResult;
@@ -31,6 +32,7 @@ import java.util.Arrays;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 public class AuthControllerTest extends ControllerTest {
 
@@ -42,14 +44,13 @@ public class AuthControllerTest extends ControllerTest {
 
   @BeforeEach
   public void setUp() {
-   this.addDefaultUserToDB();
+    this.addDefaultUserToDB();
   }
 
   @AfterEach
   public void tearDown() {
     userModelRepository.deleteAll();
   }
-
 
   @Test
   public void register_ValidUser_ShouldReturnUSer() throws Exception {
@@ -170,13 +171,13 @@ public class AuthControllerTest extends ControllerTest {
     String refreshTokenValue = this.createValidRefreshToken(requestBody);
 
     mockMvc
-            .perform(
-                    MockMvcRequestBuilders.delete("/api/auth/logout")
-                            .cookie(new Cookie("refreshToken", refreshTokenValue)))
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.message")
-                            .value("User logged out successfully")); // Or your actual message
+        .perform(
+            MockMvcRequestBuilders.delete("/api/auth/logout")
+                .cookie(new Cookie("refreshToken", refreshTokenValue)))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.message")
+                .value("User logged out successfully")); // Or your actual message
 
     mockMvc
         .perform(
@@ -204,18 +205,17 @@ public class AuthControllerTest extends ControllerTest {
         .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
         .andExpect(MockMvcResultMatchers.jsonPath("$.username").value("admin"))
         .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("Admin"));
-    }
+  }
 
   @Test
   public void getUser_WithInValidRefreshTokenCookie_ShouldThrowA400Error() throws Exception {
 
     mockMvc
-            .perform(
-                    MockMvcRequestBuilders.get("/api/auth/me")
-                            .cookie(new Cookie("refreshToken", "sdsdsdsdsdsdsd")))
-            .andExpect(MockMvcResultMatchers.status().is4xxClientError());
+        .perform(
+            MockMvcRequestBuilders.get("/api/auth/me")
+                .cookie(new Cookie("refreshToken", "sdsdsdsdsdsdsd")))
+        .andExpect(MockMvcResultMatchers.status().is4xxClientError());
   }
-
 
   @Test
   public void getUser_WithLoggedOutJwtToken_ShouldThrowA400Error() throws Exception {
@@ -224,21 +224,21 @@ public class AuthControllerTest extends ControllerTest {
     String refreshTokenValue = this.createValidRefreshToken(requestBody);
 
     mockMvc
-            .perform(
-                    MockMvcRequestBuilders.delete("/api/auth/logout")
-                            .cookie(new Cookie("refreshToken", refreshTokenValue)))
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.message")
-                            .value("User logged out successfully")); // Or your actual message
+        .perform(
+            MockMvcRequestBuilders.delete("/api/auth/logout")
+                .cookie(new Cookie("refreshToken", refreshTokenValue)))
+        .andExpect(MockMvcResultMatchers.status().isOk())
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.message")
+                .value("User logged out successfully")); // Or your actual message
 
     mockMvc
-            .perform(
-                    MockMvcRequestBuilders.get("/api/auth/me")
-                            .cookie(new Cookie("refreshToken", refreshTokenValue)))
-            .andExpect(MockMvcResultMatchers.status().is4xxClientError())
-            .andExpect(
-                    MockMvcResultMatchers.jsonPath("$.message")
-                            .value("Token not found")); // Or your actual message
+        .perform(
+            MockMvcRequestBuilders.get("/api/auth/me")
+                .cookie(new Cookie("refreshToken", refreshTokenValue)))
+        .andExpect(MockMvcResultMatchers.status().is4xxClientError())
+        .andExpect(
+            MockMvcResultMatchers.jsonPath("$.message")
+                .value("Token not found")); // Or your actual message
   }
 }

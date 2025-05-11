@@ -7,20 +7,22 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class JwtTokenProviderTest {
 
   @Autowired private JwtTokenProvider jwtTokenProvider;
 
-  private String createToken(String email, String type){
+  private String createToken(String email, String type) {
     UserModel userModel = UserModel.builder().email(email).role(UserRole.USER).build();
     if (type.equals("refresh")) {
       return jwtTokenProvider.createRefreshToken(userModel);
     } else if (type.equals("access")) {
       return jwtTokenProvider.createAccessToken(userModel);
     }
-      throw new InvalidJwtException("Invalid token");
+    throw new InvalidJwtException("Invalid token");
   }
 
   @Test
@@ -36,7 +38,7 @@ public class JwtTokenProviderTest {
   }
 
   @Test
-  public void getEmail_validToken(){
+  public void getEmail_validToken() {
     String email = "ben@admin.com";
     String accessToken = this.createToken("ben@admin.com", "access");
     String emailFromToken = jwtTokenProvider.getEmail(accessToken);
@@ -44,16 +46,16 @@ public class JwtTokenProviderTest {
   }
 
   @Test
-  public void validaAccessToken_valid(){
+  public void validaAccessToken_valid() {
     String accessToken = this.createToken("ben@admin.com", "access");
     boolean isValid = jwtTokenProvider.validateAccessToken(accessToken);
     Assertions.assertTrue(isValid);
   }
 
   @Test
-  public void validaAccessToken_Invalid(){
-    Assertions.assertThrows(InvalidJwtException.class,
-            () -> jwtTokenProvider.validateAccessToken("sdswadwqe2weqreqwewqewqewqewqeqwewq"));
+  public void validaAccessToken_Invalid() {
+    Assertions.assertThrows(
+        InvalidJwtException.class,
+        () -> jwtTokenProvider.validateAccessToken("sdswadwqe2weqreqwewqewqewqewqeqwewq"));
   }
-
 }

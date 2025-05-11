@@ -30,7 +30,7 @@ jobs:
 
       # 4 Tests
       - name: Run unit tests
-        run: ./mvnw --batch-mode test
+        run: ./mvnw --batch-mode test -e -X
         continue-on-error: false
 
       # 5 Package
