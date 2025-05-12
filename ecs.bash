@@ -1,6 +1,6 @@
 # 1) Run your Spring Boot task manually and capture its ARN
 export CLUSTER=bylt-cluster
-export TASK_DEF=bylt-api:10      # adjust if needed
+export TASK_DEF=bylt-api:17      # adjust if needed
 
 TASK_JSON=$(aws ecs run-task \
   --cluster "$CLUSTER" \

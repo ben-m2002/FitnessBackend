@@ -59,30 +59,24 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ${{ env.AWS_REGION }}
 
-      - name: Prepare & sanitize ECS task definition
-        run: |
-          TAG=${GITHUB_SHA}
-          IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:$TAG
-          echo "Using IMAGE_URI=$IMAGE_URI"
-          sed -e "s|IMAGE_URI|$IMAGE_URI|g" ecs-task-definition.json > task-def.json
 
-      - name: Register ECS task definition
-        run: aws ecs register-task-definition --cli-input-json file://task-def.json
+      - name: Render task definition
+        id: render
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ecs-task-definition.json
+          container-name: app
+          image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          secrets: |
+            SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_USERNAME_ARN }}
+            SPRING_DATASOURCE_URL=${{ secrets.SPRING_URL_ARN }}
+            SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_PASSWORD_ARN }}
 
-      - name: Update ECS service
-        run: |
-          aws ecs update-service \
-            --cluster bylt-cluster \
-            --service bylt-api-service \
-            --force-new-deployment \
-          --network-configuration 'awsvpcConfiguration={
-              subnets=[subnet-08cbb4aaf92f0d5b9,subnet-0a253890a77c40e11],
-              securityGroups=[sg-0643ddec2b54e1916],
-              assignPublicIp=ENABLED
-          }'
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render.outputs.task-definition }}
+          service: bylt-api-service
+          cluster: bylt-cluster
+          wait-for-service-stability: true
 
-      - name: Wait for service stability
-        run: |
-          aws ecs wait services-stable \
-            --cluster ${{ secrets.ECS_CLUSTER }} \
-            --services ${{ secrets.ECS_SERVICE }}
