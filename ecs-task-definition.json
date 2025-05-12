@@ -4,21 +4,26 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "1024",
   "memory": "3072",
+
   "executionRoleArn": "arn:aws:iam::692350947347:role/ecsTaskExecutionRole",
   "taskRoleArn":      "arn:aws:iam::692350947347:role/ecsTaskExecutionRole",
+
   "containerDefinitions": [
     {
       "name": "app",
       "image": "IMAGE_URI",
-      "cpu": 0,
       "memoryReservation": 512,
       "essential": true,
+
       "portMappings": [
         { "containerPort": 8080, "hostPort": 8080, "protocol": "tcp" }
       ],
+
       "environment": [
         { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" }
       ],
+
+
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
@@ -29,6 +34,5 @@
         }
       }
     }
-  ],
-  "volumes": []
+  ]
 }
