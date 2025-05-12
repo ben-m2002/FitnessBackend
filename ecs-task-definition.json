@@ -5,6 +5,7 @@
   "cpu": "1024",
   "memory": "3072",
   "executionRoleArn": "arn:aws:iam::692350947347:role/ecsTaskExecutionRole",
+  "taskRoleArn":      "arn:aws:iam::692350947347:role/ecsTaskExecutionRole",
   "containerDefinitions": [
     {
       "name": "app",
@@ -16,18 +17,15 @@
         { "containerPort": 8080, "hostPort": 8080, "protocol": "tcp" }
       ],
       "environment": [
-        {
-          "name": "SPRING_PROFILES_ACTIVE",
-          "value": "prod"
-        }
+        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/bylt",
-          "awslogs-region": "us-east-1",
+          "awslogs-group":         "/ecs/bylt",
+          "awslogs-region":        "us-east-1",
           "awslogs-stream-prefix": "ecs",
-          "awslogs-create-group": "true"
+          "awslogs-create-group":  "true"
         }
       }
     }
