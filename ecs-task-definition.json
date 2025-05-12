@@ -9,13 +9,17 @@
     {
       "name": "app",
       "image": "IMAGE_URI",
+      "cpu": 0,
       "memoryReservation": 512,
       "essential": true,
       "portMappings": [
         { "containerPort": 8080, "hostPort": 8080, "protocol": "tcp" }
       ],
       "environment": [
-        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" }
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
@@ -27,5 +31,6 @@
         }
       }
     }
-  ]
+  ],
+  "volumes": []
 }

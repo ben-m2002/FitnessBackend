@@ -1,3 +1,4 @@
+# .github/workflows/ci-cd.yml
 name: BYLT CI/CD Pipeline
 
 on:
@@ -59,7 +60,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ${{ env.AWS_REGION }}
 
-
       - name: Render task definition
         id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -79,4 +79,3 @@ jobs:
           service: bylt-api-service
           cluster: bylt-cluster
           wait-for-service-stability: true
-
