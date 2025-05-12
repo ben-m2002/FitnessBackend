@@ -17,7 +17,7 @@
       ],
       "environment": [
         { "name":"SPRING_DATASOURCE_USERNAME","value":"bylt_admin" },
-        { "name":"SPRING_DATASOURCE_URL","value":"jdbc:postgresql://bylt-db...:5432/FitnessDB" },
+        { "name":"SPRING_DATASOURCE_URL","value":"jdbc:postgresql://bylt-db.ctq260e8ux4v.us-east-1.rds.amazonaws.com:5432/FitnessDB" },
         { "name":"SPRING_DATASOURCE_PASSWORD","value":"Chivantor1234!" },
         { "name":"SPRING_PROFILES_ACTIVE","value":"prod" }
       ],
