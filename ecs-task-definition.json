@@ -21,6 +21,10 @@
 
       "environment": [
         { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" }
+        , { "name": "SPRING_DATASOURCE_URL", "value": "arn:aws:secretsmanager:us-east-1:692350947347:secret:bylt/spring-datasource-url-awZMKm" }
+        , { "name": "SPRING_DATASOURCE_USERNAME", "value": "arn:aws:secretsmanager:us-east-1:692350947347:secret:bylt/spring-datasource-username-denFvX" },
+        { "name": "SPRING_DATASOURCE_PASSWORD", "value": "arn:aws:secretsmanager:us-east-1:692350947347:secret:bylt/spring-datasource-password-hcQEEp" }
+
       ],
 
 
