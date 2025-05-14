@@ -35,7 +35,7 @@ public class WorkoutExercise {
     private ExerciseName exerciseName;
 
     @Transient
-    private ExerciseType exerciseType;
+    private ExerciseType exerciseType; // this will store some like meta-data behind each exercise that we don't want to persist
 
 
     @OneToMany(mappedBy = "workoutExercise", cascade = CascadeType.ALL)
