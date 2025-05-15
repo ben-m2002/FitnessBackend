@@ -81,7 +81,7 @@ jobs:
           aws ecs update-service \
             --cluster bylt-cluster \
             --service bylt-api-service \
-            --task-definition "${{ steps.render.outputs.task-definition-arn }}" \
+            --task-definition "${{ steps.render.outputs.task-definition }}" \
             --load-balancers "targetGroupArn=$TG_ARN,containerName=app,containerPort=8080" \
             --force-new-deployment
 
