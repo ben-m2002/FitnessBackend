@@ -63,3 +63,13 @@ jobs:
           service:                     bylt-api-service
           cluster:                     bylt-cluster
           wait-for-service-stability:  true
+
+      - name: Re-attach Target Group (one-off)
+        if: always()
+        run: |
+          TG_ARN="arn:aws:elasticloadbalancing:us-east-1:692350947347:targetgroup/bylt-api-tg/a8069a51f25dbaf7"
+          aws ecs update-service \
+            --cluster bylt-cluster \
+            --service bylt-api-service \
+            --load-balancers "targetGroupArn=$TG_ARN,containerName=app,containerPort=8080" \
+            --force-new-deployment
