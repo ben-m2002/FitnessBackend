@@ -54,11 +54,10 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region:            ${{ env.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      # Compute IMAGE_URI again locally so it isn’t redacted
       - name: Set IMAGE_URI env
         run: echo "IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${GITHUB_SHA}" >> $GITHUB_ENV
 
@@ -67,12 +66,17 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ecs-task-definition.json
-          container-name:  app
+          container-name: app
           image: ${{ env.IMAGE_URI }}
           secrets: |
             SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_USERNAME_ARN }}
-            SPRING_DATASOURCE_URL=${{ secrets.SPRING_URL_ARN }}
+            SPRING_DATASOURCE_URL=${{    secrets.SPRING_URL_ARN }}
             SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_PASSWORD_ARN }}
+
+      # 👇 DEBUG: print out what we got back
+      - name: Show rendered ARN
+        run: |
+          echo "➜ task-def ARN: '${{ steps.render.outputs.task-definition-arn }}'"
 
       - name: Deploy to ECS (bind TG every run)
         run: |
@@ -81,10 +85,12 @@ jobs:
           aws ecs update-service \
             --cluster bylt-cluster \
             --service bylt-api-service \
-            --task-definition "${{ steps.render.outputs.task-definition }}" \
+            --task-definition "${{ steps.render.outputs.task-definition-arn }}" \
             --load-balancers "targetGroupArn=$TG_ARN,containerName=app,containerPort=8080" \
             --force-new-deployment
 
+      - name: Wait for service stability
+        run: |
           aws ecs wait services-stable \
             --cluster bylt-cluster \
             --services bylt-api-service
