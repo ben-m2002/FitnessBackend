@@ -22,70 +22,78 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)   // if you’re using @PreAuthorize, etc.
+@EnableMethodSecurity(prePostEnabled = true) // if you’re using @PreAuthorize, etc.
 @Configuration
-public class SecurityConfig{
+public class SecurityConfig {
 
-    private final JwtTokenProvider tokenProvider;
-    private final CustomUserDetailsService userDetailsService;
+  private final JwtTokenProvider tokenProvider;
+  private final CustomUserDetailsService userDetailsService;
 
+  public SecurityConfig(
+      JwtTokenProvider tokenProvider, CustomUserDetailsService userDetailsService) {
+    this.tokenProvider = tokenProvider;
+    this.userDetailsService = userDetailsService;
+  }
 
-    public SecurityConfig(JwtTokenProvider tokenProvider, CustomUserDetailsService userDetailsService) {
-        this.tokenProvider = tokenProvider;
-        this.userDetailsService = userDetailsService;
-    }
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.csrf(csrf -> csrf.disable())
+        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers("/api/auth/**").permitAll()
+                    .anyRequest().authenticated())
+        .exceptionHandling(
+            ex ->
+                ex.authenticationEntryPoint(
+                    (req, res, authEx) -> {
+                      res.setStatus(HttpStatus.UNAUTHORIZED.value());
+                      res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                      String body =
+                          new ObjectMapper()
+                              .writeValueAsString(new ResponseDto(authEx.getMessage()));
+                      res.getWriter().write(body);
+                    }))
+        .authenticationProvider(daoAuthProvider())
+        .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()   // ← covers health + sub-paths
-                        .requestMatchers("/error").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint((req, res, authEx) -> {
-                            res.setStatus(HttpStatus.UNAUTHORIZED.value());
-                            res.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            String body = new ObjectMapper()
-                                    .writeValueAsString(new ResponseDto(authEx.getMessage()));
-                            res.getWriter().write(body);
-                        })
-                )
-                .authenticationProvider(daoAuthProvider())
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+    return http.build();
+  }
 
-        return http.build();
-    }
+  @Bean
+  public WebSecurityCustomizer webSecurityCustomizer() {
+    return (web) ->
+        web
+            // completely bypass security filters for these paths:
+            .ignoring()
+            .requestMatchers("/actuator/**", "/error");
+  }
 
-    @Bean
-    public DaoAuthenticationProvider daoAuthProvider(){
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(
-                passwordEncoder()
-        );
-        return authProvider;
-    }
+  @Bean
+  public DaoAuthenticationProvider daoAuthProvider() {
+    DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+    authProvider.setUserDetailsService(userDetailsService);
+    authProvider.setPasswordEncoder(passwordEncoder());
+    return authProvider;
+  }
 
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(tokenProvider, userDetailsService);
-    }
+  @Bean
+  public JwtAuthenticationFilter jwtAuthenticationFilter() {
+    return new JwtAuthenticationFilter(tokenProvider, userDetailsService);
+  }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-       return authConfig.getAuthenticationManager();
-    }
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
+      throws Exception {
+    return authConfig.getAuthenticationManager();
+  }
 
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+  @Bean
+  public BCryptPasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 }
