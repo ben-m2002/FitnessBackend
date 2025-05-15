@@ -24,6 +24,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true) // if you’re using @PreAuthorize, etc.
@@ -46,7 +47,10 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers("/api/auth/**").permitAll()
-                    .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+                        .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
+        )
+
         .exceptionHandling(
             ex ->
                 ex.authenticationEntryPoint(
