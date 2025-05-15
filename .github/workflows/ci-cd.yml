@@ -13,6 +13,8 @@ env:
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
+    outputs:
+      image-uri: ${{ steps.build-image.outputs.image-uri }}
     steps:
       - uses: actions/checkout@v3
 
@@ -25,7 +27,7 @@ jobs:
       - name: Build JAR (skip tests)
         run: ./mvnw --batch-mode package -DskipTests
 
-      - name: Configure AWS credentials
+      - name: Configure AWS creds
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -35,11 +37,12 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build & push Docker image
+        id: build-image
         run: |
           IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${GITHUB_SHA}
           docker build -t "$IMAGE_URI" .
           docker push "$IMAGE_URI"
-          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_OUTPUT
+          echo "image-uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
   deploy:
     needs: build_and_push
@@ -47,36 +50,51 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Configure AWS creds
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ${{ env.AWS_REGION }}
 
-      - name: Set IMAGE_URI variable
-        id: vars
-        run: |
-          echo "IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
-
+      # 1. Render the task definition into a JSON file (with image + secrets)
       - name: Render ECS task definition
         id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ecs-task-definition.json
           container-name: app
-          image: ${{ steps.vars.outputs.IMAGE_URI }}
+          image: ${{ needs.build_and_push.outputs.image-uri }}
           secrets: |
             SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_USERNAME_ARN }}
             SPRING_DATASOURCE_URL=${{ secrets.SPRING_URL_ARN }}
             SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_PASSWORD_ARN }}
+          output-file: rendered-task-def.json
 
+      # 2. Extract the new Task Definition ARN
+      - name: Read rendered ARN
+        id: read-arn
+        run: |
+          ARN=$(jq -r '.taskDefinition.taskDefinitionArn' rendered-task-def.json)
+          echo "rendered-arn=$ARN" >> "$GITHUB_OUTPUT"
+
+      # 3. Update the ECS service to use that new TD *and* re-bind the ALB TG
       - name: Deploy to ECS (with LB)
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.render.outputs.task-definition }}
-          service: bylt-api-service
-          cluster: bylt-cluster
-          load-balancers: |
-            targetGroupArn=arn:aws:elasticloadbalancing:us-east-1:692350947347:targetgroup/bylt-api-tg/a8069a51f25dbaf7,containerName=app,containerPort=8080
-          wait-for-service-stability: true
+        run: |
+          TG_ARN=$(aws elbv2 describe-target-groups \
+            --names bylt-api-tg \
+            --query 'TargetGroups[0].TargetGroupArn' --output text)
+
+          aws ecs update-service \
+            --cluster bylt-cluster \
+            --service bylt-api-service \
+            --task-definition "${{ steps.read-arn.outputs.rendered-arn }}" \
+            --load-balancers "targetGroupArn=$TG_ARN,containerName=app,containerPort=8080" \
+            --force-new-deployment \
+            --wait
+
+      - name: Wait for service stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster bylt-cluster \
+            --services bylt-api-service
