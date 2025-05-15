@@ -40,29 +40,28 @@ public class SecurityConfig{
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-       http
+        http
                 .csrf(csrf -> csrf.disable())
-               .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-               .authorizeHttpRequests(auth -> auth
-                       .requestMatchers("/api/auth/**").permitAll()
-                       .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
-                       .anyRequest().authenticated()
-               )
-               .exceptionHandling(ex -> ex
-                       .authenticationEntryPoint((request, response, authException) -> {
-                           // Always 401 for invalid/missing JWT
-                           response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                           response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                           String body = new ObjectMapper()
-                                   .writeValueAsString(new ResponseDto(authException.getMessage()));
-                           response.getWriter().write(body);
-                       })
-               )
-               .authenticationProvider(daoAuthProvider())
-               .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
+                        .requestMatchers("/error").permitAll()          // ← allow the error endpoint
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((req, res, authEx) -> {
+                            res.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            String body = new ObjectMapper()
+                                    .writeValueAsString(new ResponseDto(authEx.getMessage()));
+                            res.getWriter().write(body);
+                        })
+                )
+                .authenticationProvider(daoAuthProvider())
+                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-
-       return http.build();
+        return http.build();
     }
 
     @Bean

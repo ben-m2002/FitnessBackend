@@ -83,3 +83,14 @@ jobs:
           service: bylt-api-service
           cluster: bylt-cluster
           wait-for-service-stability: true
+
+      - name: Deploy to ECS (with LB)
+        run: |
+          TG_ARN=$(aws elbv2 describe-target-groups --names bylt-api-tg \
+            --query 'TargetGroups[0].TargetGroupArn' --output text)
+          aws ecs update-service \
+            --cluster bylt-cluster \
+            --service bylt-api-service \
+            --task-definition ${{ steps.render.outputs.task-definition }} \
+            --load-balancers "targetGroupArn=$TG_ARN,containerName=app,containerPort=8080" \
+            --force-new-deployment
