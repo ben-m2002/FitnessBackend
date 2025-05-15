@@ -19,6 +19,10 @@
         { "containerPort": 8080, "hostPort": 8080, "protocol": "tcp" }
       ],
 
+      "environment": [
+        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" }
+      ],
+
       "secrets": [
         {
           "name": "SPRING_DATASOURCE_URL",
