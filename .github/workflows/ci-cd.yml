@@ -11,18 +11,15 @@ env:
   MAVEN_OPTS:     "-Dplexus.security.dispatcher.skip=true"
 
 jobs:
-  # ────────────────────────────────────────────────────────────────────────────────
-  # Build the JAR, build & push the Docker image
-  # ────────────────────────────────────────────────────────────────────────────────
+  # ──────────────────────────────────────────────────────────────
+  # Build JAR, build & push Docker image
+  # ──────────────────────────────────────────────────────────────
   build_and_push:
     runs-on: ubuntu-latest
-    outputs:
-      image-uri: ${{ steps.build-image.outputs.image-uri }}
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
@@ -40,16 +37,14 @@ jobs:
       - uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build & push Docker image
-        id: build-image
         run: |
           IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${GITHUB_SHA}
           docker build -t "$IMAGE_URI" .
           docker push "$IMAGE_URI"
-          echo "image-uri=$IMAGE_URI" >> "$GITHUB_OUTPUT"
 
-  # ────────────────────────────────────────────────────────────────────────────────
-  # Render task-definition, then deploy with LB every run
-  # ────────────────────────────────────────────────────────────────────────────────
+  # ──────────────────────────────────────────────────────────────
+  # Render task-def, then deploy (re-attaching TG each time)
+  # ──────────────────────────────────────────────────────────────
   deploy:
     needs: build_and_push
     runs-on: ubuntu-latest
@@ -63,21 +58,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region:            ${{ env.AWS_REGION }}
 
-      # 1️⃣ render a new task definition (gets its own ARN output)
+      # Compute IMAGE_URI again locally so it isn’t redacted
+      - name: Set IMAGE_URI env
+        run: echo "IMAGE_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}:${GITHUB_SHA}" >> $GITHUB_ENV
+
       - name: Render ECS task definition
         id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ecs-task-definition.json
           container-name:  app
-          image:           ${{ needs.build_and_push.outputs.image-uri }}
+          image: ${{ env.IMAGE_URI }}
           secrets: |
             SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_USERNAME_ARN }}
             SPRING_DATASOURCE_URL=${{ secrets.SPRING_URL_ARN }}
             SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_PASSWORD_ARN }}
 
-      # 2️⃣ update the ECS service, keeping the TG binding every time
-      - name: Deploy to ECS with Target Group
+      - name: Deploy to ECS (bind TG every run)
         run: |
           TG_ARN="arn:aws:elasticloadbalancing:us-east-1:692350947347:targetgroup/bylt-api-tg/a8069a51f25dbaf7"
 
@@ -88,9 +85,6 @@ jobs:
             --load-balancers "targetGroupArn=$TG_ARN,containerName=app,containerPort=8080" \
             --force-new-deployment
 
-      # 3️⃣ wait until the service reports healthy
-      - name: Wait for service stability
-        run: |
           aws ecs wait services-stable \
             --cluster bylt-cluster \
             --services bylt-api-service
