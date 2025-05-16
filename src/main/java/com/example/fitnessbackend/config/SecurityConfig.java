@@ -42,28 +42,28 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
-        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers("/api/auth/**").permitAll()
-                        .anyRequest().authenticated()
-                        .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()
-        )
-
-        .exceptionHandling(
-            ex ->
-                ex.authenticationEntryPoint(
-                    (req, res, authEx) -> {
+    http
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                    // 1) Actuator endpoints first:
+                    .requestMatchers(EndpointRequest.toAnyEndpoint()).permitAll()                   //  [oai_citation:0‡GitHub](https://github.com/spring-projects/spring-security/issues/13602?utm_source=chatgpt.com)
+                    // 2) Your public API:
+                    .requestMatchers("/api/auth/**").permitAll()
+                    // 3) Everything else must be authenticated:
+                    .anyRequest().authenticated()                                                   //  [oai_citation:1‡GitHub](https://github.com/spring-projects/spring-security/issues/9835?utm_source=chatgpt.com)
+            )
+            .exceptionHandling(ex -> ex
+                    .authenticationEntryPoint((req, res, authEx) -> {
                       res.setStatus(HttpStatus.UNAUTHORIZED.value());
                       res.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                      String body =
-                          new ObjectMapper()
+                      String body = new ObjectMapper()
                               .writeValueAsString(new ResponseDto(authEx.getMessage()));
                       res.getWriter().write(body);
-                    }))
-        .authenticationProvider(daoAuthProvider())
-        .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                    })
+            )
+            .authenticationProvider(daoAuthProvider())
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
