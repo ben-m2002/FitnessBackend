@@ -20,7 +20,8 @@
       ],
 
       "environment": [
-        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" }
+        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
+        {"name" : "SPRING_MONGODB_URI", "value" :  "mongodb+srv://admin:Chivantor1234@mongo-bylt.a02p4nn.mongodb.net/prod?retryWrites=true&w=majority&appName=mongo-bylt"}
       ],
 
       "secrets": [

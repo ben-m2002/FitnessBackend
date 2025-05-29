@@ -3,11 +3,7 @@ package com.example.fitnessbackend.controllers;
 import com.example.fitnessbackend.dtos.requests.workout.SetEntryDto;
 import com.example.fitnessbackend.dtos.requests.workout.SetEntryUDto;
 import com.example.fitnessbackend.dtos.responses.ResponseDto;
-import com.example.fitnessbackend.dtos.responses.workout.AllSEResponseDto;
-import com.example.fitnessbackend.dtos.responses.workout.SetEntryResponseDto;
-import com.example.fitnessbackend.models.SetEntry;
-import com.example.fitnessbackend.service.WorkoutService;
-import jakarta.servlet.http.HttpServletRequest;
+import com.example.fitnessbackend.service.WorkoutLoggerService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -16,10 +12,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/set-entry")
 public class SetEntryController extends Controller {
-  private final WorkoutService workoutService;
+  private final WorkoutLoggerService workoutLoggerService;
 
-  public SetEntryController(WorkoutService workoutService) {
-    this.workoutService = workoutService;
+  public SetEntryController(WorkoutLoggerService workoutLoggerService) {
+    this.workoutLoggerService = workoutLoggerService;
   }
 
   @PostMapping("/create")
@@ -28,23 +24,23 @@ public class SetEntryController extends Controller {
     if (result.hasErrors()) {
       return validateResult(result);
     }
-    return ResponseEntity.ok(workoutService.createSetEntry(dto));
+    return ResponseEntity.ok(workoutLoggerService.createSetEntry(dto));
   }
 
   @GetMapping("/get/all")
   public ResponseEntity<ResponseDto> getAllSetEntries() {
-    return ResponseEntity.ok(workoutService.getAllSetEntries());
+    return ResponseEntity.ok(workoutLoggerService.getAllSetEntries());
   }
 
   @GetMapping("/get/fromExercise/{id}")
   public ResponseEntity<ResponseDto> getAllSetEntriesFromExercise(
       @PathVariable("id") Integer workoutExerciseId) {
-    return ResponseEntity.ok(workoutService.getAllSetEntriesFromExercise(workoutExerciseId));
+    return ResponseEntity.ok(workoutLoggerService.getAllSetEntriesFromExercise(workoutExerciseId));
   }
 
   @GetMapping("/get/{id}")
   public ResponseEntity<ResponseDto> getSetEntry(@PathVariable("id") Integer setEntryId) {
-    return ResponseEntity.ok(workoutService.getSetEntryById(setEntryId));
+    return ResponseEntity.ok(workoutLoggerService.getSetEntryById(setEntryId));
   }
 
   @PostMapping("/update")
@@ -53,11 +49,11 @@ public class SetEntryController extends Controller {
     if (result.hasErrors()) {
       return validateResult(result);
     }
-    return ResponseEntity.ok(workoutService.updateSetEntry(dto));
+    return ResponseEntity.ok(workoutLoggerService.updateSetEntry(dto));
   }
 
   @DeleteMapping("/delete/{id}")
   public ResponseEntity<ResponseDto> deleteSetEntry(@PathVariable("id") Integer setEntryId) {
-    return ResponseEntity.ok(workoutService.deleteSetEntry(setEntryId));
+    return ResponseEntity.ok(workoutLoggerService.deleteSetEntry(setEntryId));
   }
 }

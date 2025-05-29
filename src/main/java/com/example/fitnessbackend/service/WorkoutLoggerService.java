@@ -4,6 +4,7 @@ import com.example.fitnessbackend.components.JwtTokenProvider;
 import com.example.fitnessbackend.dtos.requests.workout.*;
 import com.example.fitnessbackend.dtos.responses.ResponseDto;
 import com.example.fitnessbackend.dtos.responses.workout.*;
+import com.example.fitnessbackend.entities.SqsAggregationMessages;
 import com.example.fitnessbackend.exceptions.InvalidCredentialsException;
 import com.example.fitnessbackend.exceptions.ResourceNotFoundException;
 import com.example.fitnessbackend.mappers.SetMapper;
@@ -11,24 +12,31 @@ import com.example.fitnessbackend.mappers.WorkoutExerciseMapper;
 import com.example.fitnessbackend.mappers.WorkoutSessionMapper;
 import com.example.fitnessbackend.models.*;
 import com.example.fitnessbackend.repositories.*;
+import com.example.fitnessbackend.repositoriesMongo.SqsAggregationMessagesRepo;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
-public class WorkoutService extends com.example.fitnessbackend.service.Service {
+public class WorkoutLoggerService extends com.example.fitnessbackend.service.Service {
   private final WorkoutSessionRepository workoutSessionRepository;
   private final WorkoutExerciseRepository workoutExerciseRepository;
   private final SetEntryRepository setEntryRepository;
   private final WorkoutSessionMapper workoutSessionMapper;
   private final WorkoutExerciseMapper workoutExerciseMapper;
   private final SetMapper setMapper;
-  private final AuthenticationManager authenticationManager;
+  private final MessageSender messageSender;
+  private final SqsAggregationMessagesRepo sqsAggregationMessagesRepo;
 
-  public WorkoutService(
+  @Value("${cloud.aws.endpoint.aggregation-queue.uri}")
+  String aggregationQueueUrl;
+
+  public WorkoutLoggerService(
       WorkoutSessionRepository workoutSessionRepository,
       WorkoutExerciseRepository workoutExerciseRepository,
       SetEntryRepository setEntryRepository,
@@ -37,7 +45,9 @@ public class WorkoutService extends com.example.fitnessbackend.service.Service {
       AuthTokenRepository authTokenRepository,
       JwtTokenProvider jwtTokenProvider,
       SetMapper setMapper,
-      AuthenticationManager authenticationManager) {
+      AuthenticationManager authenticationManager,
+      MessageSender messageSender,
+      SqsAggregationMessagesRepo sqsAggregationMessagesRepo) {
     super(jwtTokenProvider, authTokenRepository, authenticationManager);
     this.workoutSessionRepository = workoutSessionRepository;
     this.workoutExerciseRepository = workoutExerciseRepository;
@@ -45,7 +55,8 @@ public class WorkoutService extends com.example.fitnessbackend.service.Service {
     this.workoutSessionMapper = workoutSessionMapper;
     this.workoutExerciseMapper = workoutExerciseMapper;
     this.setMapper = setMapper;
-    this.authenticationManager = authenticationManager;
+    this.messageSender = messageSender;
+    this.sqsAggregationMessagesRepo = sqsAggregationMessagesRepo;
   }
 
   public WorkoutSessionResponseDto createSession(WorkoutSessionDto dto) {
@@ -160,7 +171,15 @@ public class WorkoutService extends com.example.fitnessbackend.service.Service {
     validateSetEntryOwner(setEntry);
     SetEntry savedSetEntry = setEntryRepository.save(setEntry);
     String message = "Set entry created successfully";
-    return setMapper.toSetEntryResponseDto(savedSetEntry, message);
+    SetEntryResponseDto response = setMapper.toSetEntryResponseDto(savedSetEntry, message);
+    System.out.println(aggregationQueueUrl);
+    try {
+      messageSender.sendMessage(response, aggregationQueueUrl);
+      this.ExerciseAggregationLambda(response, UUID.randomUUID().toString());
+    } catch (Exception e) {
+      System.out.println("Error: " + e.getMessage());
+    }
+    return response;
   }
 
   public AllSEResponseDto getAllSetEntries() {
@@ -235,5 +254,19 @@ public class WorkoutService extends com.example.fitnessbackend.service.Service {
   private void validateSetEntryOwner(SetEntry setEntry) {
     WorkoutExercise workoutExercise = setEntry.getWorkoutExercise();
     validateExerciseOwner(workoutExercise);
+  }
+
+  private void ExerciseAggregationLambda(SetEntryResponseDto setEntryDto, String messageId) {
+    // We will check if this messageId is already in Mongo DB so we don't read a redundant message
+    if (sqsAggregationMessagesRepo.existsByMessageId(messageId)) {
+      System.out.println("Message with ID " + messageId + " already processed.");
+    } else {
+      // Save the messageId to MongoDB to avoid processing it again
+      System.out.println("Processing message with ID: " + messageId);
+      sqsAggregationMessagesRepo.save(
+          SqsAggregationMessages.builder().messageId(messageId).build());
+      // Now process the set entry by updating or creating relevant fields in ExerciseAggregation
+      // collection
+    }
   }
 }

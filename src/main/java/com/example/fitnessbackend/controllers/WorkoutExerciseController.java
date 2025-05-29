@@ -2,9 +2,7 @@ package com.example.fitnessbackend.controllers;
 
 import com.example.fitnessbackend.dtos.requests.workout.WorkoutExerciseDto;
 import com.example.fitnessbackend.dtos.responses.ResponseDto;
-import com.example.fitnessbackend.dtos.responses.workout.AllWEResponseDto;
-import com.example.fitnessbackend.dtos.responses.workout.WorkoutExerciseResponseDto;
-import com.example.fitnessbackend.service.WorkoutService;
+import com.example.fitnessbackend.service.WorkoutLoggerService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -13,10 +11,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/workout-exercise")
 public class WorkoutExerciseController extends Controller {
-  private final WorkoutService workoutService;
+  private final WorkoutLoggerService workoutLoggerService;
 
-  public WorkoutExerciseController(WorkoutService workoutService) {
-    this.workoutService = workoutService;
+  public WorkoutExerciseController(WorkoutLoggerService workoutLoggerService) {
+    this.workoutLoggerService = workoutLoggerService;
   }
 
   @PostMapping("/create")
@@ -26,28 +24,28 @@ public class WorkoutExerciseController extends Controller {
     if (result.hasErrors()) {
       return this.validateResult(result);
     }
-    return ResponseEntity.ok(workoutService.createExercise(dto));
+    return ResponseEntity.ok(workoutLoggerService.createExercise(dto));
   }
 
   @GetMapping("/getAll")
   public ResponseEntity<ResponseDto> getAllWorkoutExercises() {
-    return ResponseEntity.ok(workoutService.getAllUserWorkoutExercises());
+    return ResponseEntity.ok(workoutLoggerService.getAllUserWorkoutExercises());
   }
 
   @GetMapping("/get/AllFromSession/{sessionId}")
   public ResponseEntity<ResponseDto> getAllWorkoutExercisesFromSession(
       @PathVariable Integer sessionId) {
-    return ResponseEntity.ok(workoutService.getAllSessionExercises(sessionId));
+    return ResponseEntity.ok(workoutLoggerService.getAllSessionExercises(sessionId));
   }
 
   @GetMapping("get/{id}")
   public ResponseEntity<ResponseDto> getWorkoutExerciseById(
       @PathVariable Integer id) {
-    return ResponseEntity.ok(workoutService.getWorkoutExerciseById(id));
+    return ResponseEntity.ok(workoutLoggerService.getWorkoutExerciseById(id));
   }
 
   @DeleteMapping("/delete/{id}")
   public ResponseEntity<ResponseDto> deleteWorkoutExercise(@PathVariable Integer id) {
-    return ResponseEntity.ok(workoutService.deleteWorkoutExercise(id));
+    return ResponseEntity.ok(workoutLoggerService.deleteWorkoutExercise(id));
   }
 }
